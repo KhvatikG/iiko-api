@@ -1,5 +1,7 @@
 from .core.base_client import BaseClient
 from .endpoints.employees import EmployeesEndpoints, RolesEndpoints, ReportsEndpoints
+from .endpoints.dishes import DishesEndpoints
+from .endpoints.orders import OrdersEndpoints
 
 
 class IikoApi:
@@ -11,3 +13,5 @@ class IikoApi:
         self.employees = EmployeesEndpoints(self.client)
         self.roles = RolesEndpoints(self.client)
         self.reports = ReportsEndpoints(self.client)
+        self.dishes = DishesEndpoints(self.client)
+        self.orders = OrdersEndpoints(self.client)
