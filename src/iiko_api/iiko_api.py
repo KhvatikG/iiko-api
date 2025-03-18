@@ -15,3 +15,4 @@ class IikoApi:
         self.reports = ReportsEndpoints(self.client)
         self.dishes = DishesEndpoints(self.client)
         self.orders = OrdersEndpoints(self.client)
+
