@@ -206,7 +206,7 @@ class ReportsEndpoints:
             agg_dict_data: dict[date, float] = {}
             dict_data = dict_data['dayDishValues']['dayDishValue']
             print(f"[get_sales_report]{dict_data=}")
-            if type(dict_data) != list:
+            if not isinstance(dict_data, list):
                 dict_data = [dict_data]
                 print("--------NOT LIST TO LIST--------")
                 print(f"[get_sales_report]{dict_data=}")

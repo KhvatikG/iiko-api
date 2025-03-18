@@ -1,5 +1,5 @@
 from requests import Response
-from ..models.models import Order, Item
+from ..models.models import Order
 
 
 class OrdersEndpoints:
