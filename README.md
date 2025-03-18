@@ -14,11 +14,16 @@
 которые предоставляют методы для работы с сотрудниками и ролями сотрудников соответственно.
 
 ## Установка
-(НЕРЕАЛИЗОВАНА)
-Для установки библиотеки используйте pip:
-
+### Используя uv
+Добавьте в pyproject.toml:
+```toml
+[tool.uv.sources]
+iiko-api = { git = "https://github.com/KhvatikG/iiko-api.git" }
 ```
-pip install iiko-api
+И выполните 
+
+```bash
+uv add iiko-api
 ```
 
 ## Использование
