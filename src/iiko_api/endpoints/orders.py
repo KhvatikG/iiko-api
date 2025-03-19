@@ -29,7 +29,7 @@ class OrdersEndpoints:
         # Отпускаем авторизацию
         self.client.logout()
 
-    def get_price_list(self, date_from: str, date_to: str = None, department_id: str = None) -> dict:
+    def get_price_list(self, date_from: str, date_to: str = None, department_id: str = None) -> dict | None:
         """
         Получение цен устаовленных приказами
 
