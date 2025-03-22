@@ -2,6 +2,8 @@ from .core.base_client import BaseClient
 from .endpoints.employees import EmployeesEndpoints, RolesEndpoints, ReportsEndpoints
 from .endpoints.dishes import DishesEndpoints
 from .endpoints.orders import OrdersEndpoints
+from .endpoints.assembly_charts import AssemblyChartsEndpoints
+from .endpoints.stores import StoresEndpoints
 
 
 class IikoApi:
@@ -15,4 +17,6 @@ class IikoApi:
         self.reports = ReportsEndpoints(self.client)
         self.dishes = DishesEndpoints(self.client)
         self.orders = OrdersEndpoints(self.client)
+        self.assembly_charts = AssemblyChartsEndpoints(self.client)
+        self.stores = StoresEndpoints(self.client)
 

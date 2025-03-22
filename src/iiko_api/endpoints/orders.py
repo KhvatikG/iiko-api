@@ -29,18 +29,36 @@ class OrdersEndpoints:
         # Отпускаем авторизацию
         self.client.logout()
 
-    def get_price_list(self, date_from: str, date_to: str = None, department_id: str = None) -> dict | None:
+    def get_price_list(
+            self,
+            date_from: str,
+            date_to: str = None,
+            type_: str = "BASE",
+            department_id: str | list = None
+    ) -> dict | None:
         """
         Получение цен устаовленных приказами
 
         :param date_from: Начало временного интервала в формате "yyyy-MM-dd". Обязательный.
         :param date_to: Конец временного интервала в формате "yyyy-MM-dd".
                         По умолчанию server iiko установит'2500-01-01'.
+        :param type_: Цены какого типа выгружать. Если None, то все. Типы:
+            BASE - Цена, которая действует на всем заданном интервале, т.е. из базового приказа.
+            SCHEDULED - Цена, которая действует по расписанию на заданном интервале, т.е. из приказа по времени.
         :param department_id: Список ресторанов, по которым делается запрос. Если не задан, то для всех.
         :return:
         """
 
         url = "/resto/api/v2/price?"
+
+        match type_:
+            case "BASE":
+                url += "type=BASE&"
+            case "SCHEDULED":
+                url += "type=SCHEDULED&"
+            case _:
+                pass
+
         if not date_from:
             raise Exception("Не задан параметр date_from")
         else:
