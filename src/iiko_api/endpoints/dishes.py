@@ -12,10 +12,13 @@ class DishesEndpoints:
     def get_dishes(self,
                    articles: list[str] | None = None,
                    ids: list[str] | None = None,
-                   types: list[str] | None = None):
+                   types: list[str] | None = None,
+                   include_deleted: bool = False,
+                   ):
         """
         Получение списка элементов номенклатуры, по артикулу, по id и по типу элемента номенклатуры.
 
+        :param include_deleted: включать ли удаленные блюда
         :param types: список типов элементов номенклатуры, по которым необходимо получить список блюд, если None - получить все блюда
         :param articles: список артикулов, по которым необходимо получить список блюд, если None - получить все блюда
         :param ids: список id блюд, по которым необходимо получить список блюд, если None - получить все блюда
@@ -23,6 +26,10 @@ class DishesEndpoints:
         """
         url = "/resto/api/v2/entities/products/list"
         url += "?"
+
+        if include_deleted:
+            url += "includeDeleted=true&"
+
         if articles:
             for article in articles:
                 url += f"nums={article}&"
