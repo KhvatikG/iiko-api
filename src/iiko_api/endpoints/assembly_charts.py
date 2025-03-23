@@ -17,7 +17,7 @@ class AssemblyChartsEndpoints:
             date_to: str = None,
             include_prepared_charts: bool = True,
             include_deleted_products: bool = False
-    ) -> list[dict] | None:
+    ) -> dict | None:
         """
         Получение всех техкарт.
 
