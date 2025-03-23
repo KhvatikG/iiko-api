@@ -14,7 +14,7 @@ class StoresEndpoints:
     def __init__(self, client: BaseClient):
         self.client = client
 
-    def get_stores(self, auto_login=True) -> dict | None:
+    def get_stores(self, auto_login=True) -> list | None:
         """
         Метод для получения списка складов
 
@@ -38,7 +38,7 @@ class StoresEndpoints:
 
         return dict_data["corporateItemDtoes"]["corporateItemDto"]
 
-    def get_stores_balance(self, timestamp: str = "now", auto_login=True) -> dict | None:
+    def get_stores_balance(self, timestamp: str = "now", auto_login=True) -> list | None:
         """
         Метод для получения остатков на складах
 
@@ -55,7 +55,7 @@ class StoresEndpoints:
         else:
             url += f"?timestamp={datetime.now().strftime('%Y-%m-%d')}"
 
-        result: Response = self.client.get(url).json()
+        result: Response = self.client.get(url)
 
         if auto_login:
             self.client.logout()
