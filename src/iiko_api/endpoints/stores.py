@@ -1,22 +1,20 @@
 from datetime import datetime
+from requests import Response
 
 import xmltodict
 
 from iiko_api.core import BaseClient
 
 
-
-
-
-
 class StoresEndpoints:
     """
     Класс, предоставляющий методы для работы со складами
     """
+
     def __init__(self, client: BaseClient):
         self.client = client
 
-    def get_stores(self, auto_login=True):
+    def get_stores(self, auto_login=True) -> dict | None:
         """
         Метод для получения списка складов
 
@@ -31,6 +29,9 @@ class StoresEndpoints:
 
         if auto_login:
             self.client.logout()
+
+        if xml_data.status_code != 200:
+            return None
 
         # Преобразование XML-данных в словарь
         dict_data = xmltodict.parse(xml_data.text)
@@ -54,9 +55,12 @@ class StoresEndpoints:
         else:
             url += f"?timestamp={datetime.now().strftime('%Y-%m-%d')}"
 
-        json_data = self.client.get(url).json()
+        result: Response = self.client.get(url).json()
 
         if auto_login:
             self.client.logout()
 
-        return json_data
+        if result.status_code == 200:
+            return result.json()
+        else:
+            return None
