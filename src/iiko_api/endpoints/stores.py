@@ -38,7 +38,7 @@ class StoresEndpoints:
 
         return dict_data["corporateItemDtoes"]["corporateItemDto"]
 
-    def get_stores_balance(self, timestamp: str = "now", auto_login=True):
+    def get_stores_balance(self, timestamp: str = "now", auto_login=True) -> dict | None:
         """
         Метод для получения остатков на складах
 

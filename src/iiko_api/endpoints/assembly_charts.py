@@ -1,4 +1,4 @@
-import json
+from requests import Response
 
 from iiko_api.core import BaseClient
 
@@ -17,7 +17,7 @@ class AssemblyChartsEndpoints:
             date_to: str = None,
             include_prepared_charts: bool = True,
             include_deleted_products: bool = False
-    ) -> list[dict]:
+    ) -> list[dict] | None:
         """
         Получение всех техкарт.
 
@@ -52,11 +52,12 @@ class AssemblyChartsEndpoints:
             url += f"includeDeletedProducts={include_deleted_products}&"
 
         # Получение данных
-        data = self.client.get(url)
+        result: Response = self.client.get(url)
 
         # Отпускаем авторизацию
         self.client.logout()
 
-        data = json.loads(data.text)
-
-        return data
+        if result.status_code == 200:
+            return result.json()
+        else:
+            return None
