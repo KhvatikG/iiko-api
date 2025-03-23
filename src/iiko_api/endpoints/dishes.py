@@ -1,3 +1,5 @@
+from requests import Response
+
 from iiko_api.core import BaseClient
 
 
@@ -14,7 +16,7 @@ class DishesEndpoints:
                    ids: list[str] | None = None,
                    types: list[str] | None = None,
                    include_deleted: bool = False,
-                   ):
+                   ) -> list[dict] | None:
         """
         Получение списка элементов номенклатуры, по артикулу, по id и по типу элемента номенклатуры.
 
@@ -44,9 +46,12 @@ class DishesEndpoints:
         self.client.login()
 
         # Выполнение GET-запроса к API, возвращающего данные о блюдах
-        json_data = self.client.get(url)
+        result: Response = self.client.get(url)
 
         # Отпускаем авторизацию
         self.client.logout()
 
-        return json_data.json()
+        if result.status_code == 200:
+            return result.json()
+        else:
+            return None
