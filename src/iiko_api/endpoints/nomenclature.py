@@ -56,3 +56,53 @@ class DishesEndpoints:
             return result.json()
         else:
             return None
+
+    def get_nomenclature_groups(
+            self, ids: list[str] | None = None,
+            parent_ids: list[str] | None = None,
+            nums: list[str] | None = None,
+            include_deleted: bool = False,
+    ) -> list[dict] | None:
+        """
+        Получение списка групп номенклатуры
+
+        :param include_deleted: включать ли удаленные группы номенклатуры
+        :param ids: список id групп номенклатуры, по которым необходимо получить список, если None - получить все
+        :param parent_ids: список id родительских групп номенклатуры, по которым необходимо получить список,
+         если None - получить все
+        :param nums: список артикулов групп номенклатуры, по которым необходимо получить список,
+         если None - получить все
+
+        :return: список словарей, где каждый словарь представляет группу номенклатуры
+        """
+        url = "/resto/api/v2/entities/products/group/list"
+        url += "?"
+
+        if ids:
+            for id_ in ids:
+                url += f"ids={id_}&"
+
+        if parent_ids:
+            for parent_id in parent_ids:
+                url += f"parentIds={parent_id}&"
+
+        if nums:
+            for num in nums:
+                url += f"nums={num}&"
+
+        if include_deleted:
+            url += "includeDeleted=true"
+
+        # Авторизация
+        self.client.login()
+
+        # Выполнение GET-запроса к API, возвращающего данные об элементах номенклатуры
+        result: Response = self.client.get(url)
+
+        # Отпускаем авторизацию
+        self.client.logout()
+
+        if result.status_code == 200:
+            return result.json()
+        else:
+            return
