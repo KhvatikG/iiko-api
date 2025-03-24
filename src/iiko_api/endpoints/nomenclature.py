@@ -3,7 +3,7 @@ from requests import Response
 from iiko_api.core import BaseClient
 
 
-class DishesEndpoints:
+class NomenclatureEndpoints:
     """
     Класс предоставляющий методы для работы с номенклатурой
     """
