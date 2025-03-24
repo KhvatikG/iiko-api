@@ -1,6 +1,6 @@
 from .core.base_client import BaseClient
 from .endpoints.employees import EmployeesEndpoints, RolesEndpoints, ReportsEndpoints
-from .endpoints.dishes import DishesEndpoints
+from .endpoints.nomenclature import DishesEndpoints
 from .endpoints.orders import OrdersEndpoints
 from .endpoints.assembly_charts import AssemblyChartsEndpoints
 from .endpoints.stores import StoresEndpoints
