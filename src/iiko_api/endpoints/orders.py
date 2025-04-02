@@ -18,8 +18,9 @@ class OrdersEndpoints:
         self.client.login()
 
         url = "/resto/api/v2/documents/menuChange"
+        header = {"Content-Type": "application/json"}
 
-        result: Response = self.client.post(endpoint=url, data=order.model_dump_json())
+        result: Response = self.client.post(endpoint=url, data=order.model_dump_json(), headers=header)
         print("-----------ПРИКАЗ ОТПРАВЛЕН НА СЕРВЕР----------------------")
         print(str(result))
         print(result.status_code)
