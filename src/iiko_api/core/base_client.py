@@ -85,14 +85,15 @@ class BaseClient:
         return self.session.get(self.base_url + endpoint, params=params)
 
     @_handle_request_errors
-    def post(self, endpoint: str, data: dict[str, Any] = None) -> Response:
+    def post(self, endpoint: str, data: dict[str, Any] = None, headers: dict[str, Any] = None) -> Response:
         """
         Метод для выполнения POST запроса
+        :param headers: Заголовки запроса
         :param endpoint: конечная точка API
         :param data: данные запроса
         :return: ответ сервера
         """
-        return self.session.post(self.base_url + endpoint, data=data)
+        return self.session.post(self.base_url + endpoint, data=data, headers=headers)
 
     def login(self) -> None:
         """
