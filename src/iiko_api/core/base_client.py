@@ -64,13 +64,19 @@ class BaseClient:
                             f"  Response Headers: {http_error.response.headers}\n"
                             f"  Response Body: {http_error.response.text}\n"
                             )
+                raise
             except ConnectionError as connection_error:
                 logger.error(f"Connection error: {connection_error}")
+                raise
             except Timeout as timeout_error:
                 logger.error(f"Timeout error: {timeout_error}")
+                raise
             except RequestException as request_error:
                 logger.error(f"Request error: {request_error}")
-            raise # Повторное возбуждение исключения для логики обработки
+                raise
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}")
+                raise
 
         return wrapper
 
