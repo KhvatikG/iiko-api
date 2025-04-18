@@ -82,8 +82,12 @@ class EmployeesEndpoints:
 
         return employees
 
-    def get_attendances_for_department(self, department_code: str, date_from: datetime, date_to: datetime) -> list[
-        dict]:
+    def get_attendances_for_department(
+            self,
+            department_code: str,
+            date_from: datetime,
+            date_to: datetime
+    ) -> list[dict]:
         """
         Получение явок сотрудников по отделу за период.
         :param department_code: Код отдела
