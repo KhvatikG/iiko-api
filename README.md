@@ -8,10 +8,7 @@
 
 Библиотека предоставляет базовый класс `IikoApi` для работы с API iiko. 
 Этот класс предоставляет методы для выполнения GET и POST запросов к API, 
-а также методы для авторизации и отмены авторизации.
-
-Библиотека также предоставляет классы `EmployeesEndpoints` и `RolesEndpoints`, 
-которые предоставляют методы для работы с сотрудниками и ролями сотрудников соответственно.
+а также методы для аутентификации и отмены аутентификации.
 
 ## Установка
 ### Используя uv
@@ -47,9 +44,42 @@ employees = iiko_api.employees.get_employees()
 # Получение списка всех ролей
 roles = iiko_api.roles.get_roles()
 ```
+## Аутентификация
+#### *IikoApi представляет контекстный менеджер для авторизованного выполнения блока кода и декоратор:*
+```python
+from iiko_api import IikoApi
+from dotenv import dotenv_values
+
+# Если используем .env подгружаем из него данные для конфигурации
+config = dotenv_values(".env")
+
+iiko_api = IikoApi(
+    base_url=config.get("BASE_URL"),
+    login=config.get("IIKO_LOGIN"),
+    hash_password=config.get("IIKO_PASS")
+)
+
+# Аутентификация через декоратор
+@iiko_api.with_authorization
+def my_function():
+    """Несколько обращений к iiko с использованием IikoApi get | post"""
+    iiko_api.client.get('/resto/api/employees/')
+    iiko_api.client.post(...)
+
+# Аутентификация через контекчтный менеджер
+with iiko_api.auth_context():
+  iiko_api.client.get('/resto/api/employees/')
+  iiko_api.client.post(...)
+```
+В представленном примере все обращения в рамках функции или контекстного менеджера будут выполнены в рамках одной авторизованной сессии.
+Методы `client.get` и `client.post` уже содержат `BASE_URL` и ожидают только конечную точку.
+post так-же может принимать заголоки и тело:   
+`post(endpoint: str, data: dict[str, Any] = None, headers: dict[str, Any] = None)`
+ 
+
 
 ## Эндпоинты и методы
-
+#### *Сейчас почти все представленные в этом разделе запросы автоматически аутентифицируются и отпускают токен по завершению, в дальнейшем это будет конфигурируемым параметром*
 ### IikoApi.employees - Ендпоинты для работы с сотрудниками.
 - ```get_employees() -> list[dict]``` - Возвращает всех сотрудников в виде списка словарей.
 - ```get_employee_by_id(employee_id: uuid) -> dict``` - Возвращает сотрудника по id
@@ -103,6 +133,7 @@ roles = iiko_api.roles.get_roles()
     Класс приказа:
     ```python
     from pydantic import BaseModel
+  
     class Order(BaseModel):
         """
         Класс для описания приказа
@@ -123,6 +154,7 @@ roles = iiko_api.roles.get_roles()
     Каждое блюдо, включённое в приказ, представляется экземпляром класса Item:
     ```python
     from pydantic import BaseModel
+  
     class Item(BaseModel):
         """
         Класс для хранения данных об элементе номенклатуры
@@ -181,12 +213,9 @@ roles = iiko_api.roles.get_roles()
 
 ## Примечания
 
-- Для работы с API iiko требуется авторизация.
-- В библиотеке используется логирование, которое можно настроить в файле logging_config.py.
-- Для инициализации client файле .env должны быть установлены переменные BASE_URL, IIKO_LOGIN и IIKO_PASS.
 - В дальнейшем будет возможность настроить логирование и передавать другие параметры при инициализации клиента.
 ---
 TODO:
-- Сделать авто-аутентификацию параметром для всех методов связанных с конечными точками.
+- Сделать авто-аутентификацию отключаемым параметром для всех методов связанных с конечными точками.
 
 
