@@ -21,11 +21,6 @@ class OrdersEndpoints:
         header = {"Content-Type": "application/json"}
 
         result: Response = self.client.post(endpoint=url, data=order.model_dump_json(), headers=header)
-        print("-----------ПРИКАЗ ОТПРАВЛЕН НА СЕРВЕР----------------------")
-        print(str(result))
-        print(result.status_code)
-        print(result.text)
-        print(result.json())
 
         # Отпускаем авторизацию
         self.client.logout()
@@ -38,7 +33,7 @@ class OrdersEndpoints:
             department_id: str | list = None
     ) -> dict | None:
         """
-        Получение цен устаовленных приказами
+        Получение цен установленных приказами
 
         :param date_from: Начало временного интервала в формате "yyyy-MM-dd". Обязательный.
         :param date_to: Конец временного интервала в формате "yyyy-MM-dd".
