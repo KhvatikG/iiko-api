@@ -97,7 +97,6 @@ class EmployeesEndpoints:
         """
         date_from = datetime.strftime(date_from, '%Y-%m-%d')
         date_to = datetime.strftime(date_to, '%Y-%m-%d')
-        print(date_from, date_to)
         # Авторизация
         self.client.login()
 
@@ -206,26 +205,16 @@ class ReportsEndpoints:
 
         # Преобразование XML-данных в словарь
         dict_data = xmltodict.parse(xml_data.text)
-        print(f"[get_sales_report]{dict_data=}")
         if date_aggregation:
             agg_dict_data: dict[date, float] = {}
             dict_data = dict_data['dayDishValues']['dayDishValue']
-            print(f"[get_sales_report]{dict_data=}")
             if not isinstance(dict_data, list):
                 dict_data = [dict_data]
-                print("--------NOT LIST TO LIST--------")
-                print(f"[get_sales_report]{dict_data=}")
-                print("--------NOT LIST TO LIST--------")
 
             for day in dict_data:
-                print("----------------------")
-                print(f"[get_sales_report]{day=}")
-                print("----------------------")
                 format_ = '%d.%m.%Y'
                 day_date = datetime.strptime(day['date'], format_).date()
-                print(f"[get_sales_report]{day_date=}")
                 agg_dict_data[day_date] = day['value']
-                print(f"[get_sales_report]{agg_dict_data=}")
 
             return agg_dict_data
         return dict_data['dayDishValues']['dayDishValue']
