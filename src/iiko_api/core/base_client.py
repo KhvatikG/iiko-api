@@ -2,8 +2,8 @@
 Модуль для работы с API iiko
 Содержит Базовый класс для работы с API iiko.
 Включающий методы: get, post
-Методы для авторизации и отправки запросов.
-А так-же контекстный менеджер логирования запросов и декоратор для авторизации запросов в функциях.
+Методы для аутентификации и отправки запросов.
+А так-же контекстный менеджер логирования запросов и декоратор для аутентификации запросов в функциях.
 Логирует запросы и ошибки.
 """
 import contextlib
@@ -103,33 +103,33 @@ class BaseClient:
 
     def login(self) -> None:
         """
-        Метод для авторизации, токен сохраняется в сессии
+        Метод для аутентификации, токен сохраняется в сессии
         :return:
         """
         params = {"login": self.username, "pass": self.secret}
         response = self.get(endpoint=LOGIN_ENDPOINT, params=params)
         if response.ok:
-            logger.info("Авторизация прошла успешно")
+            logger.info("Аутентификация прошла успешно")
         else:
-            logger.error("Ошибка авторизации")
+            logger.error("Ошибка аутентификации")
             logger.debug(f"Ответ: {response.text}")
 
     def logout(self) -> None:
         """
-        Метод для отмены авторизации
+        Метод для отмены аутентификации, токен удаляется из сессии
         :return:
         """
         response = self.get(endpoint=LOGOUT_ENDPOINT)
         if response.ok:
-            logger.info("Токен авторизации отменен")
+            logger.info("Токен аутентификации отменен")
         else:
-            logger.error("Ошибка отмены авторизации")
+            logger.error("Ошибка отмены аутентификации")
             logger.debug(f"Ответ: {response.text}")
 
     @contextlib.contextmanager
     def auth(self) -> None:
         """
-        Контекстный менеджер для авторизации запросов
+        Контекстный менеджер для аутентификации запросов
         """
         self.login()
         try:
@@ -139,7 +139,7 @@ class BaseClient:
 
     def with_auth(self, func: Callable) -> Callable:
         """
-        Декоратор для выполнения функции с авторизацией
+        Декоратор для выполнения функции с аутентификацией
         """
         def wrapper(*args, **kwargs) -> Any:
             with self.auth():
