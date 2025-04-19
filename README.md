@@ -210,6 +210,17 @@ post так-же может принимать заголоки и тело:
     Получение остатков на складах  
     `timestamp` - Время, на которое необходимо получить остатки в формате "yyyy-MM-dd", если "now" то вернет на текущее время
 
+### IikoApi.olap - OLAP отчеты
+- get_olap_by_preset_id:
+  ```
+  get_olap_by_preset_id(
+            preset_id: str, - UUID пресета в iiko(можно получить по /resto/api/v2/reports/olap/presets)
+            date_from: datetime = None,
+            date_to: datetime = None, - Не включается в отчет и должна быть больше чем date_from
+            auto_login: bool = True - Автологин, при групповых запросвх в контекстном менеджере iiko_api.auth_context 
+                                      или через декоратор with_authorization - установить False.
+    ) -> dict:
+  ```
 
 ## Примечания
 

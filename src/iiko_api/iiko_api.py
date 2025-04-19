@@ -1,6 +1,7 @@
 from .core.base_client import BaseClient
 from .endpoints.employees import EmployeesEndpoints, RolesEndpoints, ReportsEndpoints
 from .endpoints.nomenclature import NomenclatureEndpoints
+from .endpoints.olap import OLAP
 from .endpoints.orders import OrdersEndpoints
 from .endpoints.assembly_charts import AssemblyChartsEndpoints
 from .endpoints.stores import StoresEndpoints
@@ -21,4 +22,5 @@ class IikoApi:
         self.orders = OrdersEndpoints(self.client)
         self.assembly_charts = AssemblyChartsEndpoints(self.client)
         self.stores = StoresEndpoints(self.client)
+        self.olap = OLAP(self.client)
 
