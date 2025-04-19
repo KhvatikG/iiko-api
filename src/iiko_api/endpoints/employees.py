@@ -1,4 +1,4 @@
-import uuid
+from uuid import UUID
 from datetime import datetime, date
 
 from iiko_api.core import BaseClient
@@ -32,7 +32,7 @@ class EmployeesEndpoints:
 
         return dict_data['employees']['employee']
 
-    def get_employee_by_id(self, employee_id: uuid) -> dict:
+    def get_employee_by_id(self, employee_id: UUID) -> dict:
         """
         Получение данных о сотруднике по его ID
         :return: словарь, где каждый ключ представляет поле сотрудника, а значение - его значение
