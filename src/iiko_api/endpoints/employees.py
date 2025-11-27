@@ -18,14 +18,8 @@ class EmployeesEndpoints:
         Получение списка всех сотрудников
         :return: список словарей, где каждый словарь представляет сотрудника
         """
-        # Аутентификация
-        self.client.login()
-
         # Выполнение GET-запроса к API, возвращающего данные о сотрудниках
         xml_data = self.client.get('/resto/api/employees/')
-
-        # Отпускаем токен
-        self.client.logout()
 
         # Преобразование XML-данных в словарь
         dict_data = xmltodict.parse(xml_data.text)
@@ -37,14 +31,8 @@ class EmployeesEndpoints:
         Получение данных о сотруднике по его ID
         :return: словарь, где каждый ключ представляет поле сотрудника, а значение - его значение
         """
-        # Аутентификация
-        self.client.login()
-
         # Выполнение GET-запроса к API, возвращающего данные о сотруднике
         xml_data = self.client.get(f'/resto/api/employees/byId/{employee_id}')
-
-        # Отпускаем токен
-        self.client.logout()
 
         # Преобразование XML-данных в словарь
         dict_data = xmltodict.parse(xml_data.text)
@@ -97,8 +85,6 @@ class EmployeesEndpoints:
         """
         date_from = datetime.strftime(date_from, '%Y-%m-%d')
         date_to = datetime.strftime(date_to, '%Y-%m-%d')
-        # Аутентификация
-        self.client.login()
 
         endpoint = f'/resto/api/employees/attendance/byDepartment/{department_code}'
 
@@ -109,9 +95,6 @@ class EmployeesEndpoints:
 
         # Выполняем запрос к API
         xml_data = self.client.get(endpoint=endpoint, params=params)
-
-        # Отпускаем токен
-        self.client.logout()
 
         dict_data = xmltodict.parse(xml_data.text)
 
@@ -145,14 +128,8 @@ class RolesEndpoints:
         :param role_id: ID роли
         :return: Словарь, где каждый словарь представляет роль
         """
-        # Аутентификация
-        self.client.login()
-
         # Выполнение GET-запроса к API, возвращающего данные о роли по ID
         xml_data = self.client.get(f'/resto/api/employees/roles/byId/{role_id}')
-
-        # Отпускаем токен
-        self.client.logout()
 
         # Преобразование XML-данных в словарь
         dict_data = xmltodict.parse(xml_data.text)
@@ -194,14 +171,8 @@ class ReportsEndpoints:
             'allRevenue': 'false'
         }
 
-        # Аутентификация
-        self.client.login()
-
         # Выполнение GET-запроса к API
         xml_data = self.client.get(endpoint=endpoint, params=params)
-
-        # Отпускаем токен
-        self.client.logout()
 
         # Преобразование XML-данных в словарь
         dict_data = xmltodict.parse(xml_data.text)

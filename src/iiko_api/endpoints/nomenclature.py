@@ -43,14 +43,8 @@ class NomenclatureEndpoints:
             for type_ in types:
                 url += f"types={type_}&"
 
-        # Аутентификация
-        self.client.login()
-
         # Выполнение GET-запроса к API, возвращающего данные об элементах номенклатуры
         result: Response = self.client.get(url)
-
-        # Отпускаем токен
-        self.client.logout()
 
         if result.status_code == 200:
             return result.json()
@@ -93,14 +87,8 @@ class NomenclatureEndpoints:
         if include_deleted:
             url += "includeDeleted=true"
 
-        # Аутентификация
-        self.client.login()
-
         # Выполнение GET-запроса к API, возвращающего данные об элементах номенклатуры
         result: Response = self.client.get(url)
-
-        # Отпускаем токен
-        self.client.logout()
 
         if result.status_code == 200:
             return result.json()

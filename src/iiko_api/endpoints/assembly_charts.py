@@ -33,9 +33,6 @@ class AssemblyChartsEndpoints:
                 preparedCharts - Список разложенных до ингредиентов технологических карт,
                 интервал действия которых пересекает запрошенный интервал.
         """
-        # Аутентификация
-        self.client.login()
-
         url = "/resto/api/v2/assemblyCharts/getAll"
         url += "?"
 
@@ -53,9 +50,6 @@ class AssemblyChartsEndpoints:
 
         # Получение данных
         result: Response = self.client.get(url)
-
-        # Отпускаем токен
-        self.client.logout()
 
         if result.status_code == 200:
             return result.json()

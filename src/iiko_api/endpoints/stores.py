@@ -18,17 +18,11 @@ class StoresEndpoints:
         """
         Метод для получения списка складов
 
-        :param auto_login: Если True, то метод автоматически выполняет вход в систему и выход из нее
+        :param auto_login: Параметр оставлен для обратной совместимости, но больше не используется
         """
         url = "/resto/api/corporation/stores"
 
-        if auto_login:
-            self.client.login()
-
         xml_data = self.client.get(url)
-
-        if auto_login:
-            self.client.logout()
 
         if xml_data.status_code != 200:
             return None
@@ -42,13 +36,10 @@ class StoresEndpoints:
         """
         Метод для получения остатков на складах
 
-        :param auto_login: Если True, то метод автоматически выполняет вход в систему и выход из нее
+        :param auto_login: Параметр оставлен для обратной совместимости, но больше не используется
         :param timestamp: Время, на которое необходимо получить остатки(можно указать "now")
         """
         url = "/resto/api/v2/reports/balance/stores"
-
-        if auto_login:
-            self.client.login()
 
         if timestamp != "now":
             url += "?timestamp=" + timestamp
@@ -56,9 +47,6 @@ class StoresEndpoints:
             url += f"?timestamp={datetime.now().strftime('%Y-%m-%d')}"
 
         result: Response = self.client.get(url)
-
-        if auto_login:
-            self.client.logout()
 
         if result.status_code == 200:
             return result.json()

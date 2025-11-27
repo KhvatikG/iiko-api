@@ -14,16 +14,10 @@ class OrdersEndpoints:
         Создание нового приказа
         :return:
         """
-        # Аутентификация
-        self.client.login()
-
         url = "/resto/api/v2/documents/menuChange"
         header = {"Content-Type": "application/json"}
 
         result: Response = self.client.post(endpoint=url, data=order.model_dump_json(), headers=header)
-
-        # Отпускаем токен
-        self.client.logout()
 
     def get_price_list(
             self,
@@ -71,13 +65,7 @@ class OrdersEndpoints:
             else:
                 url += f"departmentId={department_id}"
 
-        # Аутентификация
-        self.client.login()
-
         result: Response = self.client.get(endpoint=url)
-
-        # Отпускаем токен
-        self.client.logout()
 
         if result.status_code == 200:
             return result.json()

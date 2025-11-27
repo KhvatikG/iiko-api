@@ -24,7 +24,7 @@ class OLAP:
         :param preset_id: UUID преднастроенного отчета
         :param date_from: дата начала отчета (включается в отчет)
         :param date_to: дата конца отчета (не включается в отчет)
-        :param auto_login: если True, то авторизация будет выполнена автоматически
+        :param auto_login: Параметр оставлен для обратной совместимости, но больше не используется
         :return: словарь с данными отчета
          """
 
@@ -54,14 +54,9 @@ class OLAP:
         else:
             date_to = date_to.strftime('%Y-%m-%d')
 
-        if auto_login:
-            self.client.login()
-
         params = {'dateFrom': date_from, 'dateTo': date_to}
 
         result: Response = self.client.get(url, params=params)
-
-        self.client.logout()
 
         result.raise_for_status()
 
