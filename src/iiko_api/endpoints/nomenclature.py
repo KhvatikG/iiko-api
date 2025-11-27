@@ -1,6 +1,7 @@
 from requests import Response
 
 from iiko_api.core import BaseClient
+from iiko_api.models.models import Product
 
 
 class NomenclatureEndpoints:
@@ -94,3 +95,25 @@ class NomenclatureEndpoints:
             return result.json()
         else:
             return
+
+    def import_product(self, product: Product) -> dict | None:
+        """
+        Импорт элемента номенклатуры
+        
+        :param product: Объект Product с данными элемента номенклатуры
+        :return: Словарь с результатом импорта или None в случае ошибки
+        """
+        url = "/resto/api/v2/entities/products/save"
+        headers = {"Content-Type": "application/json"}
+        
+        # Выполнение POST-запроса к API для импорта элемента номенклатуры
+        result: Response = self.client.post(
+            endpoint=url, 
+            data=product.model_dump_json(exclude_none=True), 
+            headers=headers
+        )
+        
+        if result.status_code == 200:
+            return result.json()
+        else:
+            return None
