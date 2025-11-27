@@ -128,3 +128,101 @@ class Order(BaseModel):
     shortName: str = ""
     deletePreviousMenu: bool = False
     items: list[Item] | list[None] = []
+
+
+class ProductWriteoffStrategy(Enum):
+    """
+    Метод списания технологической карты
+    ASSEMBLE - Списывать готовое блюдо
+    DIRECT   - Списывать ингредиенты
+    """
+    ASSEMBLE = "ASSEMBLE"  # Списывать готовое блюдо
+    DIRECT = "DIRECT"  # Списывать ингредиенты
+
+
+class ProductSizeAssemblyStrategy(Enum):
+    """
+    Стратегия сборки по размерам блюда
+    """
+    COMMON = "COMMON"  # Общая техкарта для всех размеров
+    INDIVIDUAL = "INDIVIDUAL"  # Индивидуальная техкарта для каждого размера
+
+
+class StoreSpecification(BaseModel):
+    """
+    Структура для указания подмножества подразделений (департментов),
+    в которых действует строка техкарты.
+    
+    Attributes:
+        departments: Список ID подразделений
+        inverse: false - фильтр включающий (строка действует для всех перечисленных подразделений),
+                 true - фильтр исключающий (строка действует для всех подразделений, КРОМЕ перечисленных)
+    """
+    departments: list[str] = []
+    inverse: bool = False
+
+
+class AssemblyChartItem(BaseModel):
+    """
+    Класс для описания ингредиента технологической карты
+    
+    Attributes:
+        sortWeight: Вес сортировки (порядок отображения)
+        productId: UUID продукта-ингредиента (обязательный)
+        productSizeSpecification: Спецификация размера продукта (опциональный, может быть null или dict)
+        storeSpecification: Спецификация склада/подразделения (опциональный)
+        amountIn: Количество на входе
+        amountMiddle: Количество в процессе (обязательное поле, API не принимает null)
+        amountOut: Выход готового продукта в единицах измерения
+        amountIn1-3: Акт проработки/Про (опциональные)
+        amountOut1-3: Акт проработки/Про (опциональные)
+        packageTypeId: UUID фасовки ингредиента (опциональный)
+    """
+    sortWeight: int = 0
+    productId: str
+    productSizeSpecification: dict | None = None
+    storeSpecification: StoreSpecification | None = None
+    amountIn: float = 0.0
+    amountMiddle: float = 0.0  # Обязательное поле, API не принимает null
+    amountOut: float = 0.0
+    amountIn1: float = 0.0
+    amountOut1: float = 0.0
+    amountIn2: float = 0.0
+    amountOut2: float = 0.0
+    amountIn3: float = 0.0
+    amountOut3: float = 0.0
+    packageTypeId: str | None = None
+
+
+class AssemblyChart(BaseModel):
+    """
+    Класс для описания технологической карты при сохранении
+    
+    Attributes:
+        assembledProductId: UUID продукта, для которого создается техкарта (обязательный)
+        dateFrom: Дата начала действия техкарты в формате "yyyy-MM-dd" (обязательный)
+        dateTo: Дата окончания действия техкарты в формате "yyyy-MM-dd" (опциональный, null - без ограничения)
+        assembledAmount: Количество готового продукта
+        productWriteoffStrategy: Метод списания (ASSEMBLE - списывать готовое блюдо, DIRECT - списывать ингредиенты)
+        effectiveDirectWriteoffStoreSpecification: Спецификация подразделений для прямого списания
+        productSizeAssemblyStrategy: Стратегия сборки по размерам (COMMON - общая, INDIVIDUAL - индивидуальная)
+        items: Список ингредиентов техкарты
+        technologyDescription: Комментарий "Технология приготовления"
+        description: Комментарий "Описание"
+        appearance: Комментарий "Требования к оформлению и реализации"
+        organoleptic: Комментарий "Органолептические показатели качества"
+        outputComment: Суммарный выход
+    """
+    assembledProductId: str
+    dateFrom: str
+    dateTo: str | None = None
+    assembledAmount: float
+    productWriteoffStrategy: ProductWriteoffStrategy
+    effectiveDirectWriteoffStoreSpecification: StoreSpecification
+    productSizeAssemblyStrategy: ProductSizeAssemblyStrategy
+    items: list[AssemblyChartItem]
+    technologyDescription: str = ""
+    description: str = ""
+    appearance: str = ""
+    organoleptic: str = ""
+    outputComment: str = ""

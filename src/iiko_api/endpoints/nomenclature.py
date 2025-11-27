@@ -101,7 +101,7 @@ class NomenclatureEndpoints:
         Импорт элемента номенклатуры
         
         :param product: Объект Product с данными элемента номенклатуры
-        :return: Словарь с результатом импорта или None в случае ошибки
+        :return: Словарь с результатом импорта (содержит созданный продукт) или None в случае ошибки
         """
         url = "/resto/api/v2/entities/products/save"
         headers = {"Content-Type": "application/json"}
@@ -114,6 +114,12 @@ class NomenclatureEndpoints:
         )
         
         if result.status_code == 200:
-            return result.json()
+            response_data = result.json()
+            # API возвращает структуру с полями result, errors, response
+            # response содержит созданный продукт
+            if response_data.get("result") == "SUCCESS":
+                return response_data.get("response")
+            else:
+                return None
         else:
             return None

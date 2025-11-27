@@ -1,6 +1,10 @@
 from requests import Response
+import logging
 
 from iiko_api.core import BaseClient
+from iiko_api.models.models import AssemblyChart
+
+logger = logging.getLogger(__name__)
 
 
 class AssemblyChartsEndpoints:
@@ -54,4 +58,44 @@ class AssemblyChartsEndpoints:
         if result.status_code == 200:
             return result.json()
         else:
+            return None
+
+    def save_assembly_chart(self, assembly_chart: AssemblyChart) -> dict | None:
+        """
+        Сохранение технологической карты.
+        
+        :param assembly_chart: Объект AssemblyChart с данными технологической карты
+        :return: Словарь с полной технологической картой, созданной на сервере, или None в случае ошибки.
+                 Возвращаемая техкарта содержит все поля из запроса плюс дополнительные поля от сервера:
+                 - id: UUID созданной техкарты
+                 - items[].id: UUID созданных ингредиентов
+                 - items[].packageCount: количество фасовок (если применимо)
+                 и другие поля, возвращаемые API
+        """
+        url = "/resto/api/v2/assemblyCharts/save"
+        headers = {"Content-Type": "application/json"}
+        
+        # Выполнение POST-запроса к API для сохранения технологической карты
+        result: Response = self.client.post(
+            endpoint=url,
+            data=assembly_chart.model_dump_json(exclude_none=True),
+            headers=headers
+        )
+        
+        if result.status_code == 200:
+            response_data = result.json()
+            # API возвращает структуру с полями result, errors, response
+            # response содержит полную созданную техкарту со всеми полями от сервера
+            if response_data.get("result") == "SUCCESS":
+                return response_data.get("response")
+            else:
+                errors = response_data.get("errors", [])
+                error_messages = [f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}" for err in errors]
+                logger.error(f"Ошибка при сохранении техкарты. Статус: {response_data.get('result')}")
+                logger.error(f"Ошибки API: {', '.join(error_messages)}")
+                logger.debug(f"Полный ответ API: {response_data}")
+                return None
+        else:
+            logger.error(f"HTTP ошибка при сохранении техкарты. Статус код: {result.status_code}")
+            logger.debug(f"Текст ответа: {result.text}")
             return None
