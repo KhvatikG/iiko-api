@@ -42,6 +42,16 @@ class ProductType(Enum):
     RATE = "RATE"  # Тариф (дочерний элемент для услуги)
 
 
+class ReferenceType(Enum):
+    """
+    Типы справочников для работы с API iiko
+    
+    Используется для получения данных из справочников через эндпоинт /resto/api/v2/entities/list
+    """
+    MEASURE_UNIT = "MeasureUnit"  # Единицы измерения
+    TAX_CATEGORY = "TaxCategory"  # Налоговые категории
+
+
 class Color(BaseModel):
     """
     Класс для описания цвета

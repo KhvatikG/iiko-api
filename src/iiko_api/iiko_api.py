@@ -5,6 +5,7 @@ from .endpoints.olap import OLAP
 from .endpoints.orders import OrdersEndpoints
 from .endpoints.assembly_charts import AssemblyChartsEndpoints
 from .endpoints.stores import StoresEndpoints
+from .endpoints.references import ReferencesEndpoints
 
 
 class IikoApi:
@@ -23,4 +24,5 @@ class IikoApi:
         self.assembly_charts = AssemblyChartsEndpoints(self.client)
         self.stores = StoresEndpoints(self.client)
         self.olap = OLAP(self.client)
+        self.references = ReferencesEndpoints(self.client)
 
