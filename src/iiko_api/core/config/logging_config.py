@@ -1,27 +1,20 @@
-from __future__ import annotations  # Импортируем типы loguru для анотаций
+from __future__ import annotations
 
-import sys
-
-import loguru
-from loguru import logger
+import logging
 
 
-def get_logger(name: str, level: str = "INFO", filepath: str = None, **kwargs) -> loguru.Logger:
+def get_logger(name: str) -> logging.Logger:
     """
-    Возвращает объект логгера
-
-    :param name: Имя логгера
-    :param level: Уровень логирования, по умолчанию INFO
-    :param filepath: Путь для сохранения логов
-    :param kwargs: Дополнительные параметры логирования
-    :return: Объект логгера
+    Возвращает logger с именем модуля для контекста в логах.
+    
+    Библиотека использует стандартный модуль logging и не управляет
+    его конфигурацией. Пользователь может настроить логирование
+    через стандартные механизмы Python logging.
+    
+    :param name: Имя модуля/компонента для контекста в логах
+    :return: Logger с именем модуля
     """
-
-    new_logger = logger.bind(name=name)
-    new_logger.remove() # Удаляем дефолтный логгер
-
-    new_logger.add(sink=filepath if filepath else sys.stdout, level=level, **kwargs)
-    return new_logger
+    return logging.getLogger(name)
 
 
 

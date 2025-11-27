@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestExce
 
 from iiko_api.core.config.logging_config import get_logger
 
-logger = get_logger(name=__name__, level="DEBUG")
+logger = get_logger(__name__)
 
 LOGIN_ENDPOINT = "/resto/api/auth"
 LOGOUT_ENDPOINT = "/resto/api/logout"
@@ -49,7 +49,7 @@ class BaseClient:
             try:
                 response: Response = func(*args, **kwargs)
                 response.raise_for_status()
-                logger.debug(f":\n  Request URL: {response.request.url}\n"
+                logger.debug(f"Request URL: {response.request.url}\n"
                             f"  Request Method: {response.request.method}\n"
                             f"  Request Body: {response.request.body}\n"
                             f"  Response Body: {response.text}\n"
