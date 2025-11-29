@@ -158,7 +158,7 @@ class BaseClient:
         """
         return self.session.post(self.base_url + endpoint, data=data, headers=headers)
 
-    def login(self) -> None:
+    def login(self) -> str:
         """
         Метод для аутентификации, токен сохраняется в сессии
         :return:
@@ -167,6 +167,7 @@ class BaseClient:
         response = self.get(endpoint=LOGIN_ENDPOINT, params=params)
         if response.ok:
             logger.info("Аутентификация прошла успешно")
+            return response.text
         else:
             logger.error("Ошибка аутентификации")
             logger.debug(f"Ответ: {response.text}")
