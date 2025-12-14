@@ -1,6 +1,7 @@
 """
 Модуль с кастомными исключениями для iiko API
 """
+from requests.exceptions import Timeout as RequestsTimeout, ConnectionError as RequestsConnectionError
 
 
 class IikoAPIError(Exception):
@@ -35,3 +36,27 @@ class EmployeeNotFoundError(IikoNotFoundError):
         if server_message:
             message += f". Сообщение сервера: {server_message}"
         super().__init__(message, entity_id=employee_id)
+
+
+class IikoTimeoutError(Exception):
+    """
+    Исключение, возникающее при превышении таймаута запроса к API iiko.
+    
+    Исходное исключение сохраняется
+    в атрибуте original_exception.
+    """
+    def __init__(self, message: str = "Превышено время ожидания ответа от API iiko", original_exception: Exception = None):
+        self.original_exception = original_exception
+        super().__init__(message)
+
+
+class IikoConnectionError(Exception):
+    """
+    Исключение, возникающее при ошибке подключения к API iiko.
+    
+    Исходное исключение сохраняется
+    в атрибуте original_exception.
+    """
+    def __init__(self, message: str = "Ошибка подключения к API iiko", original_exception: Exception = None):
+        self.original_exception = original_exception
+        super().__init__(message)

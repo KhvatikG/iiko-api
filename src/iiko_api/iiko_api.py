@@ -10,9 +10,17 @@ from .endpoints.reports import ReportsEndpoints
 
 
 class IikoApi:
-    def __init__(self, base_url: str, login: str, hash_password: str):
+    def __init__(self, base_url: str, login: str, hash_password: str, timeout: float = 30.0):
+        """
+        Инициализация клиента iiko API
+        
+        :param base_url: базовый URL-адрес API
+        :param login: имя пользователя
+        :param hash_password: хэш пароля
+        :param timeout: таймаут для HTTP запросов в секундах (по умолчанию 30)
+        """
         # Инициализируем базовый клиент
-        self.client = BaseClient(base_url, login, hash_password)
+        self.client = BaseClient(base_url, login, hash_password, timeout=timeout)
         self.with_authorization = self.client.with_auth
         self.auth_context = self.client.auth
 

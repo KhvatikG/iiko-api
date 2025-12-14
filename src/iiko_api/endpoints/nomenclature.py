@@ -144,7 +144,11 @@ class NomenclatureEndpoints:
         result_status = response_data.get("result")
         
         if result_status == "SUCCESS":
-            return response_data.get("response")
+            response_result = response_data.get("response")
+            if response_result is None:
+                # Если response отсутствует, возвращаем весь ответ
+                return response_data
+            return response_result
         elif result_status == "ERROR":
             # Бизнес-ошибка API: HTTP 200, но операция не выполнена
             errors = response_data.get("errors", [])

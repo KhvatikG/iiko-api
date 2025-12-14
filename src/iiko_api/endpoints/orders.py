@@ -3,6 +3,7 @@ from requests import Response
 from typing import Any
 
 from iiko_api.core import BaseClient
+from iiko_api.exceptions import IikoAPIError
 from ..models.models import Order
 
 
@@ -19,6 +20,7 @@ class OrdersEndpoints:
 
         :param order: Объект Order с данными приказа
         :return: словарь с результатом создания приказа
+        :raises IikoAPIError: если API вернул ошибку (result != SUCCESS или неожиданный формат ответа)
         :raises ValueError: если ответ API не является валидным JSON
         """
         url = "/resto/api/v2/documents/menuChange"
@@ -31,12 +33,55 @@ class OrdersEndpoints:
             headers=headers
         )
 
+        # Безопасный парсинг JSON ответа
         try:
-            return result.json()
+            response_data = result.json()
         except (json.JSONDecodeError, ValueError) as e:
             raise ValueError(
                 f"API вернул невалидный JSON. Ответ: {result.text[:200]}"
             ) from e
+
+        # Проверяем, что ответ - словарь (не список и не строка)
+        if not isinstance(response_data, dict):
+            raise IikoAPIError(
+                f"API вернул неожиданный формат ответа (ожидался dict, получен {type(response_data).__name__}): {response_data}"
+            )
+
+        # API возвращает структуру с полями result, errors, response
+        # response содержит результат создания приказа
+        result_status = response_data.get("result")
+
+        if result_status == "SUCCESS":
+            response_result = response_data.get("response")
+            if response_result is None:
+                # Если response отсутствует, возвращаем весь ответ
+                return response_data
+            return response_result
+        elif result_status == "ERROR":
+            # Бизнес-ошибка API: HTTP 200, но операция не выполнена
+            errors = response_data.get("errors", [])
+            # Безопасная обработка errors - может быть не списком
+            if not isinstance(errors, list):
+                errors = []
+
+            error_messages = [
+                f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}"
+                for err in errors
+                if isinstance(err, dict)
+            ]
+            error_message = "Ошибка при создании приказа"
+            if error_messages:
+                error_message += f". Ошибки: {', '.join(error_messages)}"
+            else:
+                error_message += f". Статус: {result_status}"
+
+            raise IikoAPIError(error_message, errors=errors)
+        else:
+            # Неожиданный статус (не SUCCESS и не ERROR) или None
+            raise IikoAPIError(
+                f"API вернул неожиданный статус результата: {result_status}. "
+                f"Полный ответ: {response_data}"
+            )
 
     def get_price_list(
             self,

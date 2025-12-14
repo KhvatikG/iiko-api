@@ -15,6 +15,7 @@ from requests import Response
 from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
 
 from iiko_api.core.config.logging_config import get_logger
+from iiko_api.exceptions import IikoTimeoutError, IikoConnectionError
 
 logger = get_logger(__name__)
 
@@ -82,16 +83,18 @@ class BaseClient:
     """
     Базовый класс для работы с API iiko
     """
-    def __init__(self, base_url: str, login: str, hash_password: str):
+    def __init__(self, base_url: str, login: str, hash_password: str, timeout: float = 30.0):
         """
         Инициализация клиента API iiko
         :param base_url: базовый URL-адрес API
         :param login: имя пользователя
         :param hash_password: хэш пароля
+        :param timeout: таймаут для HTTP запросов в секундах (по умолчанию 30)
         """
         self.base_url = base_url
         self.secret = hash_password
         self.username = login
+        self.timeout = timeout
         self.session = requests.Session()
 
     @staticmethod
@@ -124,10 +127,16 @@ class BaseClient:
                 raise
             except ConnectionError as connection_error:
                 logger.error(f"Connection error: {connection_error}")
-                raise
+                raise IikoConnectionError(
+                    f"Ошибка подключения к API iiko: {connection_error}",
+                    original_exception=connection_error
+                ) from connection_error
             except Timeout as timeout_error:
                 logger.error(f"Timeout error: {timeout_error}")
-                raise
+                raise IikoTimeoutError(
+                    f"Превышено время ожидания ответа от API iiko: {timeout_error}",
+                    original_exception=timeout_error
+                ) from timeout_error
             except RequestException as request_error:
                 logger.error(f"Request error: {request_error}")
                 raise
@@ -145,7 +154,7 @@ class BaseClient:
         :param params: параметры запроса
         :return: ответ сервера
         """
-        return self.session.get(self.base_url + endpoint, params=params)
+        return self.session.get(self.base_url + endpoint, params=params, timeout=self.timeout)
 
     @_handle_request_errors
     def post(self, endpoint: str, data: dict[str, Any] = None, headers: dict[str, Any] = None) -> Response:
@@ -156,7 +165,7 @@ class BaseClient:
         :param data: данные запроса
         :return: ответ сервера
         """
-        return self.session.post(self.base_url + endpoint, data=data, headers=headers)
+        return self.session.post(self.base_url + endpoint, data=data, headers=headers, timeout=self.timeout)
 
     def login(self) -> str:
         """

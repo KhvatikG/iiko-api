@@ -4,7 +4,9 @@ from .exceptions import (
     IikoAPIError,
     IikoNotFoundError,
     RoleNotFoundError,
-    EmployeeNotFoundError
+    EmployeeNotFoundError,
+    IikoTimeoutError,
+    IikoConnectionError
 )
 
 __all__ = [
@@ -13,5 +15,7 @@ __all__ = [
     'IikoAPIError',
     'IikoNotFoundError',
     'RoleNotFoundError',
-    'EmployeeNotFoundError'
+    'EmployeeNotFoundError',
+    'IikoTimeoutError',
+    'IikoConnectionError'
 ]
