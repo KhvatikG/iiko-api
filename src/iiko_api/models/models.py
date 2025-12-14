@@ -50,7 +50,8 @@ class ReferenceType(Enum):
     """
     MEASURE_UNIT = "MeasureUnit"  # Единицы измерения
     TAX_CATEGORY = "TaxCategory"  # Налоговые категории
-
+    ACCOUNTING_CATEGORY = "AccountingCategory" # Бухгалтерские категории
+    PRODUCT_CATEGORY = "ProductCategory" # Пользовательские категории продуктов
 
 class Color(BaseModel):
     """
