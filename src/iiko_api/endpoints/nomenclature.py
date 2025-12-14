@@ -1,7 +1,15 @@
 from requests import Response
+import json
 
 from iiko_api.core import BaseClient
 from iiko_api.models.models import Product
+
+
+class IikoAPIError(Exception):
+    """Исключение для бизнес-ошибок API iiko (когда HTTP 200, но result != SUCCESS)"""
+    def __init__(self, message: str, errors: list[dict] = None):
+        self.errors = errors or []
+        super().__init__(message)
 
 
 class NomenclatureEndpoints:
@@ -13,51 +21,60 @@ class NomenclatureEndpoints:
         self.client = client
 
     def get_nomenclature_list(self,
-                              articles: list[str] | None = None,
+                              nums: list[str] | None = None,
                               ids: list[str] | None = None,
                               types: list[str] | None = None,
+                              category_ids: list[str] | None = None,
+                              parent_ids: list[str] | None = None,
                               include_deleted: bool = False,
-                              ) -> list[dict] | None:
+                              ) -> list[dict]:
         """
-        Получение списка элементов номенклатуры, по артикулу, по id и по типу элемента номенклатуры.
+        Получение списка элементов номенклатуры, по артикулу, по id, по типу элемента номенклатуры, по категории продукта и по родительской группе.
 
         :param include_deleted: включать ли удаленные элементы номенклатуры
         :param types: список типов элементов номенклатуры,
-         по которым необходимо получить список элементов номенклатуры, если None - получить все
-        :param articles: список артикулов, по которым необходимо получить список элементов, если None - получить все
-        :param ids: список id, по которым необходимо получить список, если None - получить все
+         по которым необходимо отфильтровать список элементов номенклатуры, если None - получить все
+        :param nums: список артикулов, по которым необходимо отфильтровать список элементов, если None - получить все
+        :param ids: список id, по которым необходимо отфильтровать список, если None - получить все
+        :param category_ids: список категорий, по которым необходимо отфильтровать список, если None - получить все
+        :param parent_ids: список родительских групп, по которым необходимо отфильтровать список, если None - получить все 
         :return: список словарей, где каждый словарь представляет элемент номенклатуры
+        :raises ValueError: если ответ API не является валидным JSON
         """
         url = "/resto/api/v2/entities/products/list"
-        url += "?"
-
+        params = {}
+        
         if include_deleted:
-            url += "includeDeleted=true&"
-
-        if articles:
-            for article in articles:
-                url += f"nums={article}&"
+            params["includeDeleted"] = "true"
+        
+        if nums:
+            params["nums"] = nums
         if ids:
-            for id_ in ids:
-                url += f"ids={id_}&"
+            params["ids"] = ids
         if types:
-            for type_ in types:
-                url += f"types={type_}&"
-
+            params["types"] = types
+        if category_ids:
+            params["categoryIds"] = category_ids
+        if parent_ids:
+            params["parentIds"] = parent_ids
+        
         # Выполнение GET-запроса к API, возвращающего данные об элементах номенклатуры
-        result: Response = self.client.get(url)
-
-        if result.status_code == 200:
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
+        result: Response = self.client.get(url, params=params if params else None)
+        
+        try:
             return result.json()
-        else:
-            return None
+        except (json.JSONDecodeError, ValueError) as e:
+            raise ValueError(
+                f"API вернул невалидный JSON. Ответ: {result.text[:200]}"
+            ) from e
 
     def get_nomenclature_groups(
             self, ids: list[str] | None = None,
             parent_ids: list[str] | None = None,
             nums: list[str] | None = None,
             include_deleted: bool = False,
-    ) -> list[dict] | None:
+    ) -> list[dict]:
         """
         Получение списка групп номенклатуры
 
@@ -69,39 +86,39 @@ class NomenclatureEndpoints:
          если None - получить все
 
         :return: список словарей, где каждый словарь представляет группу номенклатуры
+        :raises ValueError: если ответ API не является валидным JSON
         """
         url = "/resto/api/v2/entities/products/group/list"
-        url += "?"
-
-        if ids:
-            for id_ in ids:
-                url += f"ids={id_}&"
-
-        if parent_ids:
-            for parent_id in parent_ids:
-                url += f"parentIds={parent_id}&"
-
-        if nums:
-            for num in nums:
-                url += f"nums={num}&"
-
+        params = {}
+        
         if include_deleted:
-            url += "includeDeleted=true"
-
-        # Выполнение GET-запроса к API, возвращающего данные об элементах номенклатуры
-        result: Response = self.client.get(url)
-
-        if result.status_code == 200:
+            params["includeDeleted"] = "true"
+        
+        if ids:
+            params["ids"] = ids
+        if parent_ids:
+            params["parentIds"] = parent_ids
+        if nums:
+            params["nums"] = nums
+        
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
+        result: Response = self.client.get(url, params=params if params else None)
+        
+        try:
             return result.json()
-        else:
-            return
+        except (json.JSONDecodeError, ValueError) as e:
+            raise ValueError(
+                f"API вернул невалидный JSON. Ответ: {result.text[:200]}"
+            ) from e
 
-    def import_product(self, product: Product) -> dict | None:
+    def import_product(self, product: Product) -> dict:
         """
         Импорт элемента номенклатуры
         
         :param product: Объект Product с данными элемента номенклатуры
-        :return: Словарь с результатом импорта (содержит созданный продукт) или None в случае ошибки
+        :return: Словарь с результатом импорта (содержит созданный продукт)
+        :raises IikoAPIError: если API вернул ошибку (result != SUCCESS или неожиданный формат ответа)
+        :raises ValueError: если ответ API не является валидным JSON
         """
         url = "/resto/api/v2/entities/products/save"
         headers = {"Content-Type": "application/json"}
@@ -113,13 +130,49 @@ class NomenclatureEndpoints:
             headers=headers
         )
         
-        if result.status_code == 200:
+        # Безопасный парсинг JSON ответа
+        try:
             response_data = result.json()
-            # API возвращает структуру с полями result, errors, response
-            # response содержит созданный продукт
-            if response_data.get("result") == "SUCCESS":
-                return response_data.get("response")
+        except (json.JSONDecodeError, ValueError) as e:
+            # Если ответ - не JSON (например, просто строка)
+            raise ValueError(
+                f"API вернул невалидный JSON. Ответ: {result.text[:200]}"
+            ) from e
+        
+        # Проверяем, что ответ - словарь (не список и не строка)
+        if not isinstance(response_data, dict):
+            raise IikoAPIError(
+                f"API вернул неожиданный формат ответа (ожидался dict, получен {type(response_data).__name__}): {response_data}"
+            )
+        
+        # API возвращает структуру с полями result, errors, response
+        # response содержит созданный продукт
+        result_status = response_data.get("result")
+        
+        if result_status == "SUCCESS":
+            return response_data.get("response")
+        elif result_status == "ERROR":
+            # Бизнес-ошибка API: HTTP 200, но операция не выполнена
+            errors = response_data.get("errors", [])
+            # Безопасная обработка errors - может быть не списком
+            if not isinstance(errors, list):
+                errors = []
+            
+            error_messages = [
+                f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}" 
+                for err in errors 
+                if isinstance(err, dict)
+            ]
+            error_message = "Ошибка при импорте продукта"
+            if error_messages:
+                error_message += f". Ошибки: {', '.join(error_messages)}"
             else:
-                return None
+                error_message += f". Статус: {result_status}"
+            
+            raise IikoAPIError(error_message, errors=errors)
         else:
-            return None
+            # Неожиданный статус (не SUCCESS и не ERROR)
+            raise IikoAPIError(
+                f"API вернул неожиданный статус результата: {result_status}. "
+                f"Полный ответ: {response_data}"
+            )
