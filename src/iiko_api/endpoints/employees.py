@@ -1,5 +1,5 @@
 from uuid import UUID
-from datetime import datetime, date
+from datetime import datetime
 
 from iiko_api.core import BaseClient
 import xmltodict
@@ -16,59 +16,133 @@ class EmployeesEndpoints:
     def get_employees(self) -> list[dict]:
         """
         Получение списка всех сотрудников
+
         :return: список словарей, где каждый словарь представляет сотрудника
+        :raises ValueError: если XML не может быть распарсен или структура данных неожиданная
         """
-        # Выполнение GET-запроса к API, возвращающего данные о сотрудниках
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         xml_data = self.client.get('/resto/api/employees/')
 
-        # Преобразование XML-данных в словарь
-        dict_data = xmltodict.parse(xml_data.text)
+        try:
+            # Преобразование XML-данных в словарь
+            dict_data = xmltodict.parse(xml_data.text)
+        except Exception as e:
+            raise ValueError(
+                f"Не удалось распарсить XML ответ. Ошибка: {e}. Ответ: {xml_data.text[:200]}"
+            ) from e
 
-        return dict_data['employees']['employee']
+        # Безопасное извлечение данных из структуры XML
+        try:
+            employees_data = dict_data.get('employees', {})
+            employees = employees_data.get('employee')
+            
+            # Если employees - None, возвращаем пустой список
+            if employees is None:
+                return []
+            
+            # Если employees - один элемент (не список), преобразуем в список
+            if isinstance(employees, dict):
+                return [employees]
+            
+            # Если employees - список, возвращаем как есть
+            if isinstance(employees, list):
+                return employees
+            
+            raise ValueError(f"Неожиданная структура данных: {type(employees)}")
+        except (KeyError, AttributeError) as e:
+            raise ValueError(
+                f"Неожиданная структура XML ответа. Ожидалась структура employees/employee. "
+                f"Ответ: {xml_data.text[:200]}"
+            ) from e
 
     def get_employee_by_id(self, employee_id: UUID) -> dict:
         """
         Получение данных о сотруднике по его ID
+
+        :param employee_id: UUID сотрудника
         :return: словарь, где каждый ключ представляет поле сотрудника, а значение - его значение
+        :raises ValueError: если XML не может быть распарсен или структура данных неожиданная
         """
-        # Выполнение GET-запроса к API, возвращающего данные о сотруднике
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         xml_data = self.client.get(f'/resto/api/employees/byId/{employee_id}')
 
-        # Преобразование XML-данных в словарь
-        dict_data = xmltodict.parse(xml_data.text)
+        try:
+            # Преобразование XML-данных в словарь
+            dict_data = xmltodict.parse(xml_data.text)
+        except Exception as e:
+            raise ValueError(
+                f"Не удалось распарсить XML ответ. Ошибка: {e}. Ответ: {xml_data.text[:200]}"
+            ) from e
 
-        dict_data = dict_data['employee']
+        try:
+            employee_data = dict_data.get('employee')
+            if employee_data is None:
+                raise ValueError(
+                    f"Сотрудник с ID {employee_id} не найден. Ответ: {xml_data.text[:200]}"
+                )
+            
+            # Нормализация departmentCodes
+            if employee_data.get('departmentCodes') and not isinstance(employee_data.get('departmentCodes'), list):
+                employee_data['departmentCodes'] = [employee_data.get('departmentCodes')]
+            else:
+                employee_data['departmentCodes'] = employee_data.get('departmentCodes', [])
 
-        if dict_data.get('departmentCodes') and not isinstance(dict_data.get('departmentCodes'), list):
-            dict_data['departmentCodes'] = [dict_data.get('departmentCodes')]
-        else:
-            dict_data['departmentCodes'] = []
-
-        return dict_data
+            return employee_data
+        except (KeyError, AttributeError) as e:
+            raise ValueError(
+                f"Неожиданная структура XML ответа. Ожидалась структура employee. "
+                f"Ответ: {xml_data.text[:200]}"
+            ) from e
 
     def get_employees_by_department(self, department_code: str) -> list[dict]:
         """
         Получение списка сотрудников по коду отдела
-        :return: список словарей, где каждый словарь представляет сотрудника привязанного к отделу
-        """
 
-        # Выполнение GET-запроса к API, возвращающего данные о сотрудниках
+        :param department_code: Код отдела
+        :return: список словарей, где каждый словарь представляет сотрудника привязанного к отделу
+        :raises ValueError: если department_code пустой, XML не может быть распарсен или структура данных неожиданная
+        """
+        if not department_code:
+            raise ValueError("department_code не может быть пустым")
+
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         xml_data = self.client.get(f'/resto/api/employees/byDepartment/{department_code}')
 
-        # Преобразование XML-данных в словарь
-        dict_data = xmltodict.parse(xml_data.text)
+        try:
+            # Преобразование XML-данных в словарь
+            dict_data = xmltodict.parse(xml_data.text)
+        except Exception as e:
+            raise ValueError(
+                f"Не удалось распарсить XML ответ. Ошибка: {e}. Ответ: {xml_data.text[:200]}"
+            ) from e
 
-        employees = []
+        try:
+            employees_data = dict_data.get('employees', {})
+            employees_list = employees_data.get('employee', [])
+            
+            # Если employees_list - None, возвращаем пустой список
+            if employees_list is None:
+                return []
+            
+            # Если employees_list - один элемент (не список), преобразуем в список
+            if isinstance(employees_list, dict):
+                employees_list = [employees_list]
+            
+            # Нормализация departmentCodes для каждого сотрудника
+            employees = []
+            for employee in employees_list:
+                if employee.get('departmentCodes') and not isinstance(employee.get('departmentCodes'), list):
+                    employee['departmentCodes'] = [employee.get('departmentCodes')]
+                else:
+                    employee['departmentCodes'] = employee.get('departmentCodes', [])
+                employees.append(employee)
 
-        for employee in dict_data['employees']['employee']:
-            if employee.get('departmentCodes') and not isinstance(employee.get('departmentCodes'), list):
-                employee['departmentCodes'] = [employee.get('departmentCodes')]
-            else:
-                employee['departmentCodes'] = []
-
-            employees.append(employee)
-
-        return employees
+            return employees
+        except (KeyError, AttributeError) as e:
+            raise ValueError(
+                f"Неожиданная структура XML ответа. Ожидалась структура employees/employee. "
+                f"Ответ: {xml_data.text[:200]}"
+            ) from e
 
     def get_attendances_for_department(
             self,
@@ -78,27 +152,62 @@ class EmployeesEndpoints:
     ) -> list[dict]:
         """
         Получение явок сотрудников по отделу за период.
+
         :param department_code: Код отдела
         :param date_from: Начало периода
         :param date_to: Конец периода, включительно
         :return: Список словарей, где каждый словарь представляет явку
+        :raises ValueError: если department_code пустой, date_from > date_to, XML не может быть распарсен или структура данных неожиданная
         """
-        date_from = datetime.strftime(date_from, '%Y-%m-%d')
-        date_to = datetime.strftime(date_to, '%Y-%m-%d')
+        if not department_code:
+            raise ValueError("department_code не может быть пустым")
+        
+        if date_from > date_to:
+            raise ValueError("date_from должен быть меньше или равен date_to")
+
+        date_from_str = datetime.strftime(date_from, '%Y-%m-%d')
+        date_to_str = datetime.strftime(date_to, '%Y-%m-%d')
 
         endpoint = f'/resto/api/employees/attendance/byDepartment/{department_code}'
 
         params = {
-            'from': date_from,
-            'to': date_to
+            'from': date_from_str,
+            'to': date_to_str
         }
 
-        # Выполняем запрос к API
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         xml_data = self.client.get(endpoint=endpoint, params=params)
 
-        dict_data = xmltodict.parse(xml_data.text)
+        try:
+            # Преобразование XML-данных в словарь
+            dict_data = xmltodict.parse(xml_data.text)
+        except Exception as e:
+            raise ValueError(
+                f"Не удалось распарсить XML ответ. Ошибка: {e}. Ответ: {xml_data.text[:200]}"
+            ) from e
 
-        return dict_data['attendances']['attendance']
+        try:
+            attendances_data = dict_data.get('attendances', {})
+            attendances = attendances_data.get('attendance')
+            
+            # Если attendances - None, возвращаем пустой список
+            if attendances is None:
+                return []
+            
+            # Если attendances - один элемент (не список), преобразуем в список
+            if isinstance(attendances, dict):
+                return [attendances]
+            
+            # Если attendances - список, возвращаем как есть
+            if isinstance(attendances, list):
+                return attendances
+            
+            raise ValueError(f"Неожиданная структура данных: {type(attendances)}")
+        except (KeyError, AttributeError) as e:
+            raise ValueError(
+                f"Неожиданная структура XML ответа. Ожидалась структура attendances/attendance. "
+                f"Ответ: {xml_data.text[:200]}"
+            ) from e
 
 
 class RolesEndpoints:
@@ -112,80 +221,75 @@ class RolesEndpoints:
     def get_roles(self) -> list[dict]:
         """
         Получение списка всех ролей
+
         :return: Список словарей, где каждый словарь представляет роль
+        :raises ValueError: если XML не может быть распарсен или структура данных неожиданная
         """
-        # Выполнение GET-запроса к API, возвращающего данные о ролях
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         xml_data = self.client.get('/resto/api/employees/roles/')
 
-        # Преобразование XML-данных в словарь
-        dict_data = xmltodict.parse(xml_data.text)
+        try:
+            # Преобразование XML-данных в словарь
+            dict_data = xmltodict.parse(xml_data.text)
+        except Exception as e:
+            raise ValueError(
+                f"Не удалось распарсить XML ответ. Ошибка: {e}. Ответ: {xml_data.text[:200]}"
+            ) from e
 
-        return dict_data['employeeRoles']['role']
+        try:
+            roles_data = dict_data.get('employeeRoles', {})
+            roles = roles_data.get('role')
+            
+            # Если roles - None, возвращаем пустой список
+            if roles is None:
+                return []
+            
+            # Если roles - один элемент (не список), преобразуем в список
+            if isinstance(roles, dict):
+                return [roles]
+            
+            # Если roles - список, возвращаем как есть
+            if isinstance(roles, list):
+                return roles
+            
+            raise ValueError(f"Неожиданная структура данных: {type(roles)}")
+        except (KeyError, AttributeError) as e:
+            raise ValueError(
+                f"Неожиданная структура XML ответа. Ожидалась структура employeeRoles/role. "
+                f"Ответ: {xml_data.text[:200]}"
+            ) from e
 
     def get_role_by_id(self, role_id: str) -> dict:
         """
         Получение роли по ID
+
         :param role_id: ID роли
-        :return: Словарь, где каждый словарь представляет роль
+        :return: Словарь, где каждый ключ представляет поле роли, а значение - его значение
+        :raises ValueError: если role_id пустой, XML не может быть распарсен или структура данных неожиданная
         """
-        # Выполнение GET-запроса к API, возвращающего данные о роли по ID
+        if not role_id:
+            raise ValueError("role_id не может быть пустым")
+
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         xml_data = self.client.get(f'/resto/api/employees/roles/byId/{role_id}')
 
-        # Преобразование XML-данных в словарь
-        dict_data = xmltodict.parse(xml_data.text)
+        try:
+            # Преобразование XML-данных в словарь
+            dict_data = xmltodict.parse(xml_data.text)
+        except Exception as e:
+            raise ValueError(
+                f"Не удалось распарсить XML ответ. Ошибка: {e}. Ответ: {xml_data.text[:200]}"
+            ) from e
 
-        return dict_data['role']
-
-
-class ReportsEndpoints:
-    """
-    Класс, предоставляющий методы для работы с отчетами по API
-    """
-
-    def __init__(self, client: BaseClient):
-        self.client = client
-
-    def get_sales_report(
-            self, date_from: datetime, date_to: datetime, department_id: str, date_aggregation: bool = True
-    ) -> dict[date, float] | list[dict]:
-        """
-        Получение отчета по продажам за период.
-        Возвращает словарь, где ключ это дата, а значение это выручка, если date_aggregation=True
-        Если date_aggregation=False, то отчет будет списком словарей с ключами date и value.
-        :param department_id: ID отдела
-        :param date_from: Начало периода
-        :param date_to: Конец периода включается в отчет
-        :param date_aggregation: Если True, то отчет будет агрегирован по дням, иначе будет соответствовать выводу iiko.
-        :return: Словарь, где ключ это дата, а значение это выручка.
-        """
-        format_ = '%d.%m.%Y'
-        date_from = datetime.strftime(date_from, format_)
-        date_to = datetime.strftime(date_to, format_)
-
-        endpoint = '/resto/api/reports/sales'
-
-        params = {
-            'department': department_id,
-            'dateFrom': date_from,
-            'dateTo': date_to,
-            'allRevenue': 'false'
-        }
-
-        # Выполнение GET-запроса к API
-        xml_data = self.client.get(endpoint=endpoint, params=params)
-
-        # Преобразование XML-данных в словарь
-        dict_data = xmltodict.parse(xml_data.text)
-        if date_aggregation:
-            agg_dict_data: dict[date, float] = {}
-            dict_data = dict_data['dayDishValues']['dayDishValue']
-            if not isinstance(dict_data, list):
-                dict_data = [dict_data]
-
-            for day in dict_data:
-                format_ = '%d.%m.%Y'
-                day_date = datetime.strptime(day['date'], format_).date()
-                agg_dict_data[day_date] = day['value']
-
-            return agg_dict_data
-        return dict_data['dayDishValues']['dayDishValue']
+        try:
+            role_data = dict_data.get('role')
+            if role_data is None:
+                raise ValueError(
+                    f"Роль с ID {role_id} не найдена. Ответ: {xml_data.text[:200]}"
+                )
+            return role_data
+        except (KeyError, AttributeError) as e:
+            raise ValueError(
+                f"Неожиданная структура XML ответа. Ожидалась структура role. "
+                f"Ответ: {xml_data.text[:200]}"
+            ) from e
