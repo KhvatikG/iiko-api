@@ -32,16 +32,16 @@ class NomenclatureEndpoints:
         :param nums: список артикулов, по которым необходимо отфильтровать список элементов, если None - получить все
         :param ids: список id, по которым необходимо отфильтровать список, если None - получить все
         :param category_ids: список категорий, по которым необходимо отфильтровать список, если None - получить все
-        :param parent_ids: список родительских групп, по которым необходимо отфильтровать список, если None - получить все 
+        :param parent_ids: список родительских групп, по которым необходимо отфильтровать список, если None - получить все
         :return: список словарей, где каждый словарь представляет элемент номенклатуры
         :raises ValueError: если ответ API не является валидным JSON
         """
         url = "/resto/api/v2/entities/products/list"
         params = {}
-        
+
         if include_deleted:
             params["includeDeleted"] = "true"
-        
+
         if nums:
             params["nums"] = nums
         if ids:
@@ -52,11 +52,11 @@ class NomenclatureEndpoints:
             params["categoryIds"] = category_ids
         if parent_ids:
             params["parentIds"] = parent_ids
-        
+
         # Выполнение GET-запроса к API, возвращающего данные об элементах номенклатуры
         # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         result: Response = self.client.get(url, params=params if params else None)
-        
+
         try:
             return result.json()
         except (json.JSONDecodeError, ValueError) as e:
@@ -85,17 +85,17 @@ class NomenclatureEndpoints:
         """
         url = "/resto/api/v2/entities/products/group/list"
         params = {}
-        
+
         if include_deleted:
             params["includeDeleted"] = "true"
-        
+
         if ids:
             params["ids"] = ids
         if parent_ids:
             params["parentIds"] = parent_ids
         if nums:
             params["nums"] = nums
-        
+
         # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         result: Response = self.client.get(url, params=params if params else None)
         
@@ -120,8 +120,8 @@ class NomenclatureEndpoints:
         
         # Выполнение POST-запроса к API для импорта элемента номенклатуры
         result: Response = self.client.post(
-            endpoint=url, 
-            data=product.model_dump_json(exclude_none=True), 
+            endpoint=url,
+            data=product.model_dump_json(exclude_none=True),
             headers=headers
         )
         
@@ -158,8 +158,8 @@ class NomenclatureEndpoints:
                 errors = []
             
             error_messages = [
-                f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}" 
-                for err in errors 
+                f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}"
+                for err in errors
                 if isinstance(err, dict)
             ]
             error_message = "Ошибка при импорте продукта"

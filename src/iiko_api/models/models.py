@@ -46,7 +46,7 @@ class ProductType(Enum):
 class ReferenceType(Enum):
     """
     Типы справочников для работы с API iiko
-    
+
     Используется для получения данных из справочников через эндпоинт /resto/api/v2/entities/list
     """
     MEASURE_UNIT = "MeasureUnit"  # Единицы измерения
@@ -57,7 +57,7 @@ class ReferenceType(Enum):
 class Color(BaseModel):
     """
     Класс для описания цвета
-    
+
     Attributes:
         red: Значение красного канала (0-255)
         green: Значение зеленого канала (0-255)
@@ -71,7 +71,7 @@ class Color(BaseModel):
 class Product(BaseModel):
     """
     Класс для описания элемента номенклатуры при импорте
-    
+
     Attributes:
         name: Название элемента номенклатуры (обязательный)
         description: Описание элемента (опциональный)
@@ -154,7 +154,7 @@ class StoreSpecification(BaseModel):
     """
     Структура для указания подмножества подразделений (департментов),
     в которых действует строка техкарты.
-    
+
     Attributes:
         departments: Список ID подразделений
         inverse: false - фильтр включающий (строка действует для всех перечисленных подразделений),
@@ -199,7 +199,7 @@ class AssemblyChartItem(BaseModel):
 class AssemblyChart(BaseModel):
     """
     Класс для описания технологической карты при сохранении
-    
+
     Attributes:
         assembledProductId: UUID продукта, для которого создается техкарта (обязательный)
         dateFrom: Дата начала действия техкарты в формате "yyyy-MM-dd" (обязательный)

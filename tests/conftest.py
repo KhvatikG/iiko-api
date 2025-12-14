@@ -1,7 +1,7 @@
 """
 Конфигурация pytest для тестов iiko-api
 """
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import pytest
 from requests import Response

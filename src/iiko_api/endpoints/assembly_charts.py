@@ -129,8 +129,8 @@ class AssemblyChartsEndpoints:
                 errors = []
             
             error_messages = [
-                f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}" 
-                for err in errors 
+                f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}"
+                for err in errors
                 if isinstance(err, dict)
             ]
             error_message = "Ошибка при сохранении техкарты"

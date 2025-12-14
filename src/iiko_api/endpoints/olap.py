@@ -33,7 +33,7 @@ class OLAP:
         try:
             UUID(preset_id)
         except ValueError:
-            raise ValueError('preset_id должен быть валидным UUID')
+            raise ValueError('preset_id должен быть валидным UUID') from None
 
         if date_from and not isinstance(date_from, datetime):
             raise TypeError('date_from должен быть типа datetime')

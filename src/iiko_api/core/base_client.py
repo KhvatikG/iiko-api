@@ -7,7 +7,8 @@
 Логирует запросы и ошибки.
 """
 import contextlib
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests

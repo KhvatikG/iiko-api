@@ -39,7 +39,7 @@ class EmployeeNotFoundError(IikoNotFoundError):
 class IikoTimeoutError(Exception):
     """
     Исключение, возникающее при превышении таймаута запроса к API iiko.
-    
+
     Исходное исключение сохраняется
     в атрибуте original_exception.
     """
@@ -51,7 +51,7 @@ class IikoTimeoutError(Exception):
 class IikoConnectionError(Exception):
     """
     Исключение, возникающее при ошибке подключения к API iiko.
-    
+
     Исходное исключение сохраняется
     в атрибуте original_exception.
     """

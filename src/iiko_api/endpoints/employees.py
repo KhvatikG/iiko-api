@@ -254,15 +254,15 @@ class RolesEndpoints:
             # Если roles - None, возвращаем пустой список
             if roles is None:
                 return []
-            
+
             # Если roles - один элемент (не список), преобразуем в список
             if isinstance(roles, dict):
                 return [roles]
-            
+
             # Если roles - список, возвращаем как есть
             if isinstance(roles, list):
                 return roles
-            
+
             raise ValueError(f"Неожиданная структура данных: {type(roles)}")
         except (KeyError, AttributeError) as e:
             raise ValueError(

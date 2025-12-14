@@ -73,7 +73,7 @@ class StoresEndpoints:
         :raises ValueError: если timestamp имеет неверный формат или ответ API не является валидным JSON
         """
         url = "/resto/api/v2/reports/balance/stores"
-        
+
         # Определяем значение timestamp
         if timestamp == "now":
             timestamp_value = datetime.now().strftime('%Y-%m-%d')
@@ -85,7 +85,7 @@ class StoresEndpoints:
                     f"timestamp должен быть в формате 'yyyy-MM-dd' или 'now', получено: '{timestamp}'"
                 )
             timestamp_value = timestamp
-        
+
         params: dict[str, Any] = {"timestamp": timestamp_value}
 
         # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
