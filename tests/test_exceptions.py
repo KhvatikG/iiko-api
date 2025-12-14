@@ -2,13 +2,14 @@
 Тесты для исключений iiko-api
 """
 import pytest
+
 from iiko_api.exceptions import (
-    IikoAPIError,
-    IikoNotFoundError,
-    RoleNotFoundError,
     EmployeeNotFoundError,
+    IikoAPIError,
+    IikoConnectionError,
+    IikoNotFoundError,
     IikoTimeoutError,
-    IikoConnectionError
+    RoleNotFoundError,
 )
 
 

@@ -1,8 +1,6 @@
 """
 Модуль с кастомными исключениями для iiko API
 """
-from requests.exceptions import Timeout as RequestsTimeout, ConnectionError as RequestsConnectionError
-
 
 class IikoAPIError(Exception):
     """Исключение для бизнес-ошибок API iiko (когда HTTP 200, но result != SUCCESS)"""

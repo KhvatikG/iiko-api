@@ -1,12 +1,14 @@
 """
 Тесты для OrdersEndpoints
 """
-import pytest
 import json
 from unittest.mock import Mock, patch
+
+import pytest
+
 from iiko_api.endpoints.orders import OrdersEndpoints
 from iiko_api.exceptions import IikoAPIError
-from iiko_api.models.models import Order, Status, Item
+from iiko_api.models.models import Item, Order, Status
 
 
 def test_set_new_order_success(mock_base_client, mock_success_response):

@@ -1,11 +1,11 @@
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
+import xmltodict
 from requests.exceptions import HTTPError
 
 from iiko_api.core import BaseClient
 from iiko_api.exceptions import EmployeeNotFoundError, RoleNotFoundError
-import xmltodict
 
 
 class EmployeesEndpoints:

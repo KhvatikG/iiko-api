@@ -1,11 +1,12 @@
 import json
 import re
-from requests import Response
 from typing import Any
 
+from requests import Response
+
 from iiko_api.core import BaseClient
-from iiko_api.models.models import AssemblyChart
 from iiko_api.exceptions import IikoAPIError
+from iiko_api.models.models import AssemblyChart
 
 
 class AssemblyChartsEndpoints:

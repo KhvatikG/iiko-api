@@ -1,7 +1,8 @@
-from datetime import datetime, date
+from datetime import date, datetime
+
+import xmltodict
 
 from iiko_api.core import BaseClient
-import xmltodict
 
 
 class ReportsEndpoints:

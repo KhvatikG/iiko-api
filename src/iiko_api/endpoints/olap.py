@@ -1,6 +1,7 @@
 import json
-from uuid import UUID
 from datetime import datetime, timedelta
+from uuid import UUID
+
 from requests import Response
 
 from iiko_api.core import BaseClient

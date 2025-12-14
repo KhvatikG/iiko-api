@@ -1,12 +1,12 @@
 from .core.base_client import BaseClient
+from .endpoints.assembly_charts import AssemblyChartsEndpoints
 from .endpoints.employees import EmployeesEndpoints, RolesEndpoints
 from .endpoints.nomenclature import NomenclatureEndpoints
 from .endpoints.olap import OLAP
 from .endpoints.orders import OrdersEndpoints
-from .endpoints.assembly_charts import AssemblyChartsEndpoints
-from .endpoints.stores import StoresEndpoints
 from .endpoints.references import ReferencesEndpoints
 from .endpoints.reports import ReportsEndpoints
+from .endpoints.stores import StoresEndpoints
 
 
 class IikoApi:

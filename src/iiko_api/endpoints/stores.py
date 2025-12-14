@@ -1,10 +1,10 @@
 import json
 import re
 from datetime import datetime
-from requests import Response
 from typing import Any
 
 import xmltodict
+from requests import Response
 
 from iiko_api.core import BaseClient
 

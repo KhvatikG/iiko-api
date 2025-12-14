@@ -1,9 +1,10 @@
-from requests import Response
 import json
 
+from requests import Response
+
 from iiko_api.core import BaseClient
-from iiko_api.models.models import Product
 from iiko_api.exceptions import IikoAPIError
+from iiko_api.models.models import Product
 
 
 class NomenclatureEndpoints:

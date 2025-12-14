@@ -1,3 +1,3 @@
-from .models import Order, Item
+from .models import Item, Order
 
 __all__ = ["Order", "Item"]

@@ -1,8 +1,10 @@
 """
 Тесты для NomenclatureEndpoints
 """
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from iiko_api.endpoints.nomenclature import NomenclatureEndpoints
 from iiko_api.exceptions import IikoAPIError
 from iiko_api.models.models import Product, ProductType

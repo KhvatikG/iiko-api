@@ -1,8 +1,9 @@
 """
 Конфигурация pytest для тестов iiko-api
 """
+from unittest.mock import MagicMock, Mock
+
 import pytest
-from unittest.mock import Mock, MagicMock
 from requests import Response
 
 from iiko_api.core.base_client import BaseClient

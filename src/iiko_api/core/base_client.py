@@ -7,15 +7,15 @@
 Логирует запросы и ошибки.
 """
 import contextlib
-from typing import Callable, Any
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from typing import Any, Callable
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
 from requests import Response
-from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
+from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
 
 from iiko_api.core.config.logging_config import get_logger
-from iiko_api.exceptions import IikoTimeoutError, IikoConnectionError
+from iiko_api.exceptions import IikoConnectionError, IikoTimeoutError
 
 logger = get_logger(__name__)
 

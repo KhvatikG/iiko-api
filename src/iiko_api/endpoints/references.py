@@ -1,4 +1,5 @@
 import json
+
 from requests import Response
 
 from iiko_api.core import BaseClient
