@@ -3,13 +3,7 @@ import json
 
 from iiko_api.core import BaseClient
 from iiko_api.models.models import Product
-
-
-class IikoAPIError(Exception):
-    """Исключение для бизнес-ошибок API iiko (когда HTTP 200, но result != SUCCESS)"""
-    def __init__(self, message: str, errors: list[dict] = None):
-        self.errors = errors or []
-        super().__init__(message)
+from iiko_api.exceptions import IikoAPIError
 
 
 class NomenclatureEndpoints:

@@ -1,7 +1,10 @@
 from uuid import UUID
 from datetime import datetime
 
+from requests.exceptions import HTTPError
+
 from iiko_api.core import BaseClient
+from iiko_api.exceptions import EmployeeNotFoundError, RoleNotFoundError
 import xmltodict
 
 
@@ -61,10 +64,18 @@ class EmployeesEndpoints:
 
         :param employee_id: UUID сотрудника
         :return: словарь, где каждый ключ представляет поле сотрудника, а значение - его значение
+        :raises EmployeeNotFoundError: если сотрудник не найден (HTTP 404)
         :raises ValueError: если XML не может быть распарсен или структура данных неожиданная
         """
-        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
-        xml_data = self.client.get(f'/resto/api/employees/byId/{employee_id}')
+        try:
+            xml_data = self.client.get(f'/resto/api/employees/byId/{employee_id}')
+        except HTTPError as e:
+            # Обработка 404 ошибки - сотрудник не найден
+            if e.response.status_code == 404:
+                server_message = e.response.text.strip() if e.response.text else None
+                raise EmployeeNotFoundError(str(employee_id), server_message) from e
+            # Для других HTTP ошибок пробрасываем дальше
+            raise
 
         try:
             # Преобразование XML-данных в словарь
@@ -265,13 +276,21 @@ class RolesEndpoints:
 
         :param role_id: ID роли
         :return: Словарь, где каждый ключ представляет поле роли, а значение - его значение
+        :raises RoleNotFoundError: если роль не найдена (HTTP 404)
         :raises ValueError: если role_id пустой, XML не может быть распарсен или структура данных неожиданная
         """
         if not role_id:
             raise ValueError("role_id не может быть пустым")
 
-        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
-        xml_data = self.client.get(f'/resto/api/employees/roles/byId/{role_id}')
+        try:
+            xml_data = self.client.get(f'/resto/api/employees/roles/byId/{role_id}')
+        except HTTPError as e:
+            # Обработка 404 ошибки - роль не найдена
+            if e.response.status_code == 404:
+                server_message = e.response.text.strip() if e.response.text else None
+                raise RoleNotFoundError(role_id, server_message) from e
+            # Для других HTTP ошибок пробрасываем дальше
+            raise
 
         try:
             # Преобразование XML-данных в словарь
