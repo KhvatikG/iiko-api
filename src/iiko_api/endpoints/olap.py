@@ -1,3 +1,4 @@
+import json
 from uuid import UUID
 from datetime import datetime, timedelta
 from requests import Response
@@ -26,12 +27,12 @@ class OLAP:
         :param date_to: дата конца отчета (не включается в отчет)
         :param auto_login: Параметр оставлен для обратной совместимости, но больше не используется
         :return: словарь с данными отчета
-         """
+        """
 
         try:
             UUID(preset_id)
         except ValueError:
-            raise TypeError('preset_id должен быть типа UUID')
+            raise ValueError('preset_id должен быть валидным UUID')
 
         if date_from and not isinstance(date_from, datetime):
             raise TypeError('date_from должен быть типа datetime')
@@ -56,14 +57,13 @@ class OLAP:
 
         params = {'dateFrom': date_from, 'dateTo': date_to}
 
+        # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         result: Response = self.client.get(url, params=params)
 
-        result.raise_for_status()
-
-        return result.json()
-
-
-
-
-
+        try:
+            return result.json()
+        except (json.JSONDecodeError, ValueError) as e:
+            raise ValueError(
+                f"API вернул невалидный JSON. Ответ: {result.text[:200]}"
+            ) from e
 
