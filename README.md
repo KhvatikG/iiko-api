@@ -1,6 +1,6 @@
 # iiko-api
 
-**Версия:** 0.10.1
+**Версия:** 1.0.0
 
 Библиотека для работы с API iiko.
 
@@ -65,19 +65,19 @@ from dotenv import dotenv_values
 # Если используем .env подгружаем из него данные для конфигурации
 config = dotenv_values(".env")
 
-iiko_api = IikoApi(
+iiko_client = IikoApi(
     base_url=config.get("BASE_URL"),
     login=config.get("IIKO_LOGIN"),
     hash_password=config.get("IIKO_PASS")
 )
 
 # Получение списка всех сотрудников (требует аутентификации)
-with iiko_api.auth_context():
-    employees = iiko_api.employees.get_employees()
+with iiko_client.auth_context():
+    employees = iiko_client.employees.get_employees()
 
 # Получение списка всех ролей (требует аутентификации)
-with iiko_api.auth_context():
-    roles = iiko_api.roles.get_roles()
+with iiko_client.auth_context():
+    roles = iiko_client.roles.get_roles()
 ```
 ## Аутентификация
 
@@ -91,23 +91,23 @@ from dotenv import dotenv_values
 # Если используем .env подгружаем из него данные для конфигурации
 config = dotenv_values(".env")
 
-iiko_api = IikoApi(
+iiko_client = IikoApi(
     base_url=config.get("BASE_URL"),
     login=config.get("IIKO_LOGIN"),
     hash_password=config.get("IIKO_PASS")
 )
 
 # Аутентификация через декоратор
-@iiko_api.with_authorization
+@iiko_client.with_authorization
 def my_function():
     """Несколько обращений к iiko с использованием IikoApi get | post"""
-    iiko_api.client.get('/resto/api/employees/')
-    iiko_api.client.post(...)
+    iiko_client.client.get('/resto/api/employees/')
+    iiko_client.client.post(...)
 
 # Аутентификация через контекстный менеджер
-with iiko_api.auth_context():
-  iiko_api.client.get('/resto/api/employees/')
-  iiko_api.client.post(...)
+with iiko_client.auth_context():
+  iiko_client.client.get('/resto/api/employees/')
+  iiko_client.client.post(...)
 ```
 В представленном примере все обращения в рамках функции или контекстного менеджера будут выполнены в рамках одной авторизованной сессии.
 Методы `client.get` и `client.post` уже содержат `BASE_URL` и ожидают только конечную точку.
@@ -180,8 +180,8 @@ with iiko_api.auth_context():
     )
     
     # Отправка приказа (требует аутентификации)
-    with iiko_api.auth_context():
-        result = iiko_api.orders.set_new_order(order)
+    with iiko_client.auth_context():
+        result = iiko_client.orders.set_new_order(order)
     ```
 
 - `get_price_list(date_from: str, date_to: str = None, type_: str = "BASE", department_id: str | list = None) -> dict`
@@ -476,8 +476,8 @@ spec = StoreSpecification(
 from iiko_api import IikoApi, IikoPriceOrderService
 from iiko_api.models import Item
 
-iiko_api = IikoApi(...)
-price_service = IikoPriceOrderService(iiko_api)
+iiko_client = IikoApi(...)
+price_service = IikoPriceOrderService(iiko_client)
 
 # Формирование приказа для установки цен
 dishes = [
@@ -507,7 +507,7 @@ price_service.set_price(dishes=dishes, order_date="2024-12-23")
 from iiko_api import IikoApi, IikoAPIError
 
 try:
-    product = iiko_api.nomenclature.import_product(product_data)
+    product = iiko_client.nomenclature.import_product(product_data)
 except IikoAPIError as e:
     print(f"Ошибка API: {e}")
     print(f"Детали ошибок: {e.errors}")
@@ -523,7 +523,7 @@ except IikoAPIError as e:
 from iiko_api import IikoApi, RoleNotFoundError
 
 try:
-    role = iiko_api.roles.get_role_by_id("role-id")
+    role = iiko_client.roles.get_role_by_id("role-id")
 except RoleNotFoundError as e:
     print(f"Роль не найдена: {e}")
     print(f"ID роли: {e.role_id}")
@@ -536,7 +536,7 @@ except RoleNotFoundError as e:
 from iiko_api import IikoApi, EmployeeNotFoundError
 
 try:
-    employee = iiko_api.employees.get_employee_by_id(employee_id)
+    employee = iiko_client.employees.get_employee_by_id(employee_id)
 except EmployeeNotFoundError as e:
     print(f"Сотрудник не найден: {e}")
     print(f"ID сотрудника: {e.employee_id}")
@@ -549,11 +549,11 @@ except EmployeeNotFoundError as e:
 from iiko_api import IikoApi, IikoTimeoutError
 
 try:
-    employees = iiko_api.employees.get_employees()
+    employees = iiko_client.employees.get_employees()
 except IikoTimeoutError as e:
     print(f"Превышено время ожидания: {e}")
     # Можно попробовать увеличить timeout при инициализации:
-    # iiko_api = IikoApi(base_url, login, password, timeout=60.0)
+    # iiko_client = IikoApi(base_url, login, password, timeout=60.0)
 ```
 
 #### `IikoConnectionError`
@@ -563,7 +563,7 @@ except IikoTimeoutError as e:
 from iiko_api import IikoApi, IikoConnectionError
 
 try:
-    employees = iiko_api.employees.get_employees()
+    employees = iiko_client.employees.get_employees()
 except IikoConnectionError as e:
     print(f"Ошибка подключения: {e}")
 ```
@@ -585,9 +585,9 @@ import json
 
 try:
     # Ваш код работы с API
-    employees = iiko_api.employees.get_employees()
-    role = iiko_api.roles.get_role_by_id("role-id")
-    product = iiko_api.nomenclature.import_product(product_data)
+    employees = iiko_client.employees.get_employees()
+    role = iiko_client.roles.get_role_by_id("role-id")
+    product = iiko_client.nomenclature.import_product(product_data)
     
 except IikoAPIError as e:
     # Бизнес-ошибка API (HTTP 200, но result=ERROR)
@@ -632,7 +632,7 @@ except Exception as e:
 При создании экземпляра `IikoApi` можно указать таймаут для HTTP запросов:
 
 ```python
-iiko_api = IikoApi(
+iiko_client = IikoApi(
     base_url=config.get("BASE_URL"),
     login=config.get("IIKO_LOGIN"),
     hash_password=config.get("IIKO_PASS"),
