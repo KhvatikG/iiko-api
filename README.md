@@ -1,6 +1,6 @@
 # iiko-api
 
-**Версия:** 1.0.0
+**Версия:** 1.0.1
 
 Библиотека для работы с API iiko.
 
@@ -31,6 +31,12 @@
 Библиотека предоставляет базовый класс `IikoApi` для работы с API iiko. 
 Этот класс предоставляет методы для выполнения GET и POST запросов к API, 
 а также методы для аутентификации и отмены аутентификации.
+
+## Логирование и безопасность
+
+По умолчанию библиотека **не логирует** request/response body и auth query
+(`login`/`pass` вырезаются из URL). Включение тел: `IikoApi(..., log_bodies=True)`
+только для локальной отладки. Лицензия: MIT (`LICENSE`).
 
 ## Требования
 
@@ -112,7 +118,7 @@ with iiko_client.auth_context():
 В представленном примере все обращения в рамках функции или контекстного менеджера будут выполнены в рамках одной авторизованной сессии.
 Методы `client.get` и `client.post` уже содержат `BASE_URL` и ожидают только конечную точку.
 `post` также может принимать заголовки и тело:
-`post(endpoint: str, data: dict[str, Any] = None, headers: dict[str, Any] = None)`
+`post(endpoint: str, data: dict[str, Any] | None = None, headers: dict[str, Any] | None = None, *, json: dict[str, Any] | None = None)`
 
 
 
@@ -219,14 +225,24 @@ with iiko_client.auth_context():
     - `auto_login` - Параметр оставлен для обратной совместимости, но больше не используется.
 
 ### IikoApi.olap - OLAP отчеты
-- `get_olap_by_preset_id(preset_id: str, date_from: datetime = None, date_to: datetime = None, auto_login: bool = True) -> dict`
+- `get_olap_by_preset_id(preset_id: str, date_from: date | datetime = None, date_to: date | datetime = None, auto_login: bool = True) -> dict`
     Получение отчета по ID преднастроенного отчета.
     - `preset_id` - UUID пресета в iiko (можно получить по /resto/api/v2/reports/olap/presets).
-    - `date_from` - Дата начала отчета (включается в отчет).
+    - `date_from` - Дата начала отчета (включается в отчет); принимаются `date` и `datetime`.
     - `date_to` - Дата конца отчета (не включается в отчет и должна быть больше чем date_from).
     - `auto_login` - Параметр оставлен для обратной совместимости, но больше не используется.
-    
-    Дата начала и конца отчета должны отличаться.
+
+    Дата начала и конца сравниваются по календарному дню (время в `datetime` отбрасывается).
+
+- `query_olap(body: dict) -> dict`
+    Произвольный OLAP-запрос (`POST /resto/api/v2/reports/olap`). Тело — JSON в формате iiko OLAP API.
+    JSON-числа парсятся в `Decimal` (`parse_float=Decimal`).
+
+- `get_fiscal_sales_olap_raw(date_from, date_to, department_id) -> dict`
+    Сырой fiscal OLAP SALES (`DishDiscountSumInt`, фильтр `PayTypes.IsPrintCheque=FISCAL`).
+
+- `get_fiscal_sales_by_day(date_from, date_to, department_id) -> dict[date, Decimal]`
+    Фискальная выручка по дням. Значения — `Decimal` с квантованием до `0.01` (HALF_UP), не `float`.
 
 ### IikoApi.references - Справочники
 - get_entities(root_type: str) -> list[dict]

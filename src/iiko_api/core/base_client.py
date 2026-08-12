@@ -6,6 +6,8 @@
 А так-же контекстный менеджер логирования запросов и декоратор для аутентификации запросов в функциях.
 Логирует запросы и ошибки.
 """
+from __future__ import annotations
+
 import contextlib
 from collections.abc import Callable
 from typing import Any
@@ -23,182 +25,166 @@ logger = get_logger(__name__)
 LOGIN_ENDPOINT = "/resto/api/auth"
 LOGOUT_ENDPOINT = "/resto/api/logout"
 
+DEFAULT_SENSITIVE_PARAMS = (
+    "login",
+    "pass",
+    "password",
+    "token",
+    "access_token",
+    "refresh_token",
+    "key",
+)
 
-def sanitize_url(url: str | None, sensitive_params: list[str] = None) -> str:
-    """
-    Удаляет чувствительные параметры из URL перед логированием
-    
-    :param url: URL для очистки (может быть None)
-    :param sensitive_params: список параметров для удаления (по умолчанию: login, pass)
-    :return: URL без чувствительных параметров или исходный URL если обработка не удалась
-    """
+
+def sanitize_url(url: str | None, sensitive_params: list[str] | None = None) -> str:
+    """Удаляет чувствительные параметры из URL перед логированием."""
     if not url:
-        return str(url) if url is not None else ""
-    
+        return ""
+
     if sensitive_params is None:
-        sensitive_params = ["login", "pass"]
-    
+        sensitive_params = list(DEFAULT_SENSITIVE_PARAMS)
+
     try:
         parsed = urlparse(str(url))
-        
-        # Если нет query параметров, возвращаем как есть
         if not parsed.query:
             return str(url)
-        
+
         query_params = parse_qs(parsed.query, keep_blank_values=True)
-        
-        # Удаляем чувствительные параметры
         for param in sensitive_params:
             query_params.pop(param, None)
-        
-        # Если все параметры были удалены, убираем "?" из URL
+
         if not query_params:
-            sanitized = urlunparse((
-                parsed.scheme,
-                parsed.netloc,
-                parsed.path,
-                parsed.params,
-                "",  # пустой query
-                parsed.fragment
-            ))
-        else:
-            # Собираем URL обратно с оставшимися параметрами
-            new_query = urlencode(query_params, doseq=True)
-            sanitized = urlunparse((
+            return urlunparse(
+                (parsed.scheme, parsed.netloc, parsed.path, parsed.params, "", parsed.fragment)
+            )
+
+        new_query = urlencode(query_params, doseq=True)
+        return urlunparse(
+            (
                 parsed.scheme,
                 parsed.netloc,
                 parsed.path,
                 parsed.params,
                 new_query,
-                parsed.fragment
-            ))
-        
-        return sanitized
+                parsed.fragment,
+            )
+        )
     except Exception:
-        # В случае любой ошибки возвращаем исходный URL
-        # (лучше показать URL с данными, чем сломать логирование)
-        return str(url)
+        # Never fall back to the raw URL (may contain credentials).
+        return "<unparseable-url>"
 
 
 class BaseClient:
-    """
-    Базовый класс для работы с API iiko
-    """
-    def __init__(self, base_url: str, login: str, hash_password: str, timeout: float = 30.0):
-        """
-        Инициализация клиента API iiko
-        :param base_url: базовый URL-адрес API
-        :param login: имя пользователя
-        :param hash_password: хэш пароля
-        :param timeout: таймаут для HTTP запросов в секундах (по умолчанию 30)
-        """
+    """Базовый класс для работы с API iiko."""
+
+    def __init__(
+        self,
+        base_url: str,
+        login: str,
+        hash_password: str,
+        timeout: float = 30.0,
+        *,
+        log_bodies: bool = False,
+    ):
         self.base_url = base_url
         self.secret = hash_password
         self.username = login
         self.timeout = timeout
+        self.log_bodies = log_bodies
         self.session = requests.Session()
+
+    def _log_exchange(self, response: Response, *, level: str = "debug") -> None:
+        request = response.request
+        message = (
+            f"Request URL: {sanitize_url(request.url)}\n"
+            f"  Request Method: {request.method}\n"
+            f"  Status: {response.status_code}"
+        )
+        if self.log_bodies:
+            message += (
+                f"\n  Request Body: {request.body}\n"
+                f"  Response Body: {response.text}"
+            )
+        log_fn = logger.debug if level == "debug" else logger.error
+        log_fn(message)
 
     @staticmethod
     def _handle_request_errors(func: Callable) -> Callable:
-        """
-        Декоратор для обработки ошибок HTTP запросов
-        :param func: Функция для обработки ошибок
-        :return:
-        """
-
-        def wrapper(*args, **kwargs):
+        def wrapper(self: BaseClient, *args: Any, **kwargs: Any):
             try:
-                response: Response = func(*args, **kwargs)
+                response: Response = func(self, *args, **kwargs)
                 response.raise_for_status()
-                logger.debug(f"Request URL: {sanitize_url(response.request.url)}\n"
-                            f"  Request Method: {response.request.method}\n"
-                            f"  Request Body: {response.request.body}\n"
-                            f"  Response Body: {response.text}\n"
-                             )
+                self._log_exchange(response, level="debug")
                 return response
             except HTTPError as http_error:
-                logger.error(f"HTTP error: {http_error} - Status code: {http_error.response.status_code}")
-                logger.debug(f"\n  Request URL: {sanitize_url(http_error.response.url)}\n"
-                            f"  Request Method: {http_error.response.request.method}\n"
-                            f"  Request Headers: {http_error.response.request.headers}\n"
-                            f"  Request Body: {http_error.response.request.body}\n"
-                            f"  Response Headers: {http_error.response.headers}\n"
-                            f"  Response Body: {http_error.response.text}\n"
-                            )
+                logger.error(
+                    "HTTP error: %s - Status code: %s",
+                    http_error,
+                    http_error.response.status_code if http_error.response is not None else "?",
+                )
+                if http_error.response is not None:
+                    self._log_exchange(http_error.response, level="debug")
                 raise
             except ConnectionError as connection_error:
-                logger.error(f"Connection error: {connection_error}")
+                logger.error("Connection error: %s", connection_error)
                 raise IikoConnectionError(
                     f"Ошибка подключения к API iiko: {connection_error}",
-                    original_exception=connection_error
+                    original_exception=connection_error,
                 ) from connection_error
             except Timeout as timeout_error:
-                logger.error(f"Timeout error: {timeout_error}")
+                logger.error("Timeout error: %s", timeout_error)
                 raise IikoTimeoutError(
                     f"Превышено время ожидания ответа от API iiko: {timeout_error}",
-                    original_exception=timeout_error
+                    original_exception=timeout_error,
                 ) from timeout_error
             except RequestException as request_error:
-                logger.error(f"Request error: {request_error}")
+                logger.error("Request error: %s", request_error)
                 raise
             except Exception as e:
-                logger.error(f"Unexpected error: {e}")
+                logger.error("Unexpected error: %s", e)
                 raise
 
         return wrapper
 
     @_handle_request_errors
-    def get(self, endpoint: str, params: dict[str, Any] = None) -> Response:
-        """
-        Метод для выполнения GET запроса
-        :param endpoint: конечная точка API
-        :param params: параметры запроса
-        :return: ответ сервера
-        """
+    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> Response:
         return self.session.get(self.base_url + endpoint, params=params, timeout=self.timeout)
 
     @_handle_request_errors
-    def post(self, endpoint: str, data: dict[str, Any] = None, headers: dict[str, Any] = None) -> Response:
-        """
-        Метод для выполнения POST запроса
-        :param headers: Заголовки запроса
-        :param endpoint: конечная точка API
-        :param data: данные запроса
-        :return: ответ сервера
-        """
-        return self.session.post(self.base_url + endpoint, data=data, headers=headers, timeout=self.timeout)
+    def post(
+        self,
+        endpoint: str,
+        data: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        *,
+        json: dict[str, Any] | None = None,
+    ) -> Response:
+        return self.session.post(
+            self.base_url + endpoint,
+            data=data,
+            json=json,
+            headers=headers,
+            timeout=self.timeout,
+        )
 
     def login(self) -> str:
-        """
-        Метод для аутентификации, токен сохраняется в сессии
-        :return:
-        """
         params = {"login": self.username, "pass": self.secret}
         response = self.get(endpoint=LOGIN_ENDPOINT, params=params)
         if response.ok:
             logger.info("Аутентификация прошла успешно")
             return response.text
-        else:
-            logger.error("Ошибка аутентификации")
-            logger.debug(f"Ответ: {response.text}")
+        logger.error("Ошибка аутентификации")
+        return ""
 
     def logout(self) -> None:
-        """
-        Метод для отмены аутентификации, токен удаляется из сессии
-        :return:
-        """
         response = self.get(endpoint=LOGOUT_ENDPOINT)
         if response.ok:
             logger.info("Токен аутентификации отменен")
         else:
             logger.error("Ошибка отмены аутентификации")
-            logger.debug(f"Ответ: {response.text}")
 
     @contextlib.contextmanager
-    def auth(self) -> None:
-        """
-        Контекстный менеджер для аутентификации запросов
-        """
+    def auth(self):
         self.login()
         try:
             yield
@@ -206,10 +192,8 @@ class BaseClient:
             self.logout()
 
     def with_auth(self, func: Callable) -> Callable:
-        """
-        Декоратор для выполнения функции с аутентификацией
-        """
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             with self.auth():
                 return func(*args, **kwargs)
+
         return wrapper

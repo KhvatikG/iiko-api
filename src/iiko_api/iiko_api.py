@@ -10,7 +10,15 @@ from .endpoints.stores import StoresEndpoints
 
 
 class IikoApi:
-    def __init__(self, base_url: str, login: str, hash_password: str, timeout: float = 30.0):
+    def __init__(
+        self,
+        base_url: str,
+        login: str,
+        hash_password: str,
+        timeout: float = 30.0,
+        *,
+        log_bodies: bool = False,
+    ):
         """
         Инициализация клиента iiko API
 
@@ -18,13 +26,18 @@ class IikoApi:
         :param login: имя пользователя
         :param hash_password: хэш пароля
         :param timeout: таймаут для HTTP запросов в секундах (по умолчанию 30)
+        :param log_bodies: если True — логировать request/response body (опасно)
         """
-        # Инициализируем базовый клиент
-        self.client = BaseClient(base_url, login, hash_password, timeout=timeout)
+        self.client = BaseClient(
+            base_url,
+            login,
+            hash_password,
+            timeout=timeout,
+            log_bodies=log_bodies,
+        )
         self.with_authorization = self.client.with_auth
         self.auth_context = self.client.auth
 
-        # Инициализируем эндпоинты, передавая клиент в конструктор каждого из них
         self.employees = EmployeesEndpoints(self.client)
         self.roles = RolesEndpoints(self.client)
         self.reports = ReportsEndpoints(self.client)

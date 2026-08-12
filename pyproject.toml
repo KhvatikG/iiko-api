@@ -1,8 +1,9 @@
 [project]
 name = "iiko-api"
-version = "1.0.0"
+version = "1.0.1"
 description = "Библиотека для работы с iiko api"
 readme = "README.md"
+license = "MIT"
 authors = [
     { name = "Garik", email = "khvatik.igor@gmail.com" }
 ]
