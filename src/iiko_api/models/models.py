@@ -167,7 +167,7 @@ class StoreSpecification(BaseModel):
 class AssemblyChartItem(BaseModel):
     """
     Класс для описания ингредиента технологической карты
-    
+
     Attributes:
         sortWeight: Вес сортировки (порядок отображения)
         productId: UUID продукта-ингредиента (обязательный)

@@ -1,6 +1,6 @@
 # iiko-api
 
-**Версия:** 1.0.1
+**Версия:** 1.1.0
 
 Библиотека для работы с API iiko.
 
@@ -40,14 +40,14 @@
 
 ## Требования
 
-- Python >=3.10
+- Python >=3.11
 
 ### Зависимости
 
-- pydantic>=2.10.6
-- python-dotenv>=1.0.1
-- requests>=2.32.3
-- xmltodict>=0.14.2
+- pydantic>=2.13.4
+- python-dotenv>=1.2.2
+- requests>=2.34.2
+- xmltodict>=1.0.4
 
 ## Установка
 ### Используя uv

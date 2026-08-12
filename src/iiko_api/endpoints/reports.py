@@ -30,7 +30,7 @@ class ReportsEndpoints:
         """
         if not department_id:
             raise ValueError("department_id не может быть пустым")
-        
+
         if date_from > date_to:
             raise ValueError("date_from должен быть меньше или равен date_to")
 
@@ -61,15 +61,15 @@ class ReportsEndpoints:
         try:
             day_dish_values = dict_data.get('dayDishValues', {})
             day_dish_value = day_dish_values.get('dayDishValue')
-            
+
             # Если day_dish_value - None, возвращаем пустой результат
             if day_dish_value is None:
                 return {} if date_aggregation else []
-            
+
             # Если day_dish_value - один элемент (не список), преобразуем в список
             if isinstance(day_dish_value, dict):
                 day_dish_value = [day_dish_value]
-            
+
             if date_aggregation:
                 agg_dict_data: dict[date, float] = {}
                 if isinstance(day_dish_value, list):
@@ -79,7 +79,7 @@ class ReportsEndpoints:
                         value = float(day.get('value', 0))
                         agg_dict_data[day_date] = value
                 return agg_dict_data
-            
+
             # Если date_aggregation=False, возвращаем список
             if isinstance(day_dish_value, list):
                 return day_dish_value

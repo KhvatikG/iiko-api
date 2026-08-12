@@ -38,19 +38,19 @@ class EmployeesEndpoints:
         try:
             employees_data = dict_data.get('employees', {})
             employees = employees_data.get('employee')
-            
+
             # Если employees - None, возвращаем пустой список
             if employees is None:
                 return []
-            
+
             # Если employees - один элемент (не список), преобразуем в список
             if isinstance(employees, dict):
                 return [employees]
-            
+
             # Если employees - список, возвращаем как есть
             if isinstance(employees, list):
                 return employees
-            
+
             raise ValueError(f"Неожиданная структура данных: {type(employees)}")
         except (KeyError, AttributeError) as e:
             raise ValueError(
@@ -91,7 +91,7 @@ class EmployeesEndpoints:
                 raise ValueError(
                     f"Сотрудник с ID {employee_id} не найден. Ответ: {xml_data.text[:200]}"
                 )
-            
+
             # Нормализация departmentCodes
             if employee_data.get('departmentCodes') and not isinstance(employee_data.get('departmentCodes'), list):
                 employee_data['departmentCodes'] = [employee_data.get('departmentCodes')]
@@ -130,15 +130,15 @@ class EmployeesEndpoints:
         try:
             employees_data = dict_data.get('employees', {})
             employees_list = employees_data.get('employee', [])
-            
+
             # Если employees_list - None, возвращаем пустой список
             if employees_list is None:
                 return []
-            
+
             # Если employees_list - один элемент (не список), преобразуем в список
             if isinstance(employees_list, dict):
                 employees_list = [employees_list]
-            
+
             # Нормализация departmentCodes для каждого сотрудника
             employees = []
             for employee in employees_list:
@@ -172,7 +172,7 @@ class EmployeesEndpoints:
         """
         if not department_code:
             raise ValueError("department_code не может быть пустым")
-        
+
         if date_from > date_to:
             raise ValueError("date_from должен быть меньше или равен date_to")
 
@@ -200,19 +200,19 @@ class EmployeesEndpoints:
         try:
             attendances_data = dict_data.get('attendances', {})
             attendances = attendances_data.get('attendance')
-            
+
             # Если attendances - None, возвращаем пустой список
             if attendances is None:
                 return []
-            
+
             # Если attendances - один элемент (не список), преобразуем в список
             if isinstance(attendances, dict):
                 return [attendances]
-            
+
             # Если attendances - список, возвращаем как есть
             if isinstance(attendances, list):
                 return attendances
-            
+
             raise ValueError(f"Неожиданная структура данных: {type(attendances)}")
         except (KeyError, AttributeError) as e:
             raise ValueError(
@@ -250,7 +250,7 @@ class RolesEndpoints:
         try:
             roles_data = dict_data.get('employeeRoles', {})
             roles = roles_data.get('role')
-            
+
             # Если roles - None, возвращаем пустой список
             if roles is None:
                 return []

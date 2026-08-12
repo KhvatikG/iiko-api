@@ -98,7 +98,7 @@ class NomenclatureEndpoints:
 
         # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         result: Response = self.client.get(url, params=params if params else None)
-        
+
         try:
             return result.json()
         except (json.JSONDecodeError, ValueError) as e:
@@ -109,7 +109,7 @@ class NomenclatureEndpoints:
     def import_product(self, product: Product) -> dict:
         """
         Импорт элемента номенклатуры
-        
+
         :param product: Объект Product с данными элемента номенклатуры
         :return: Словарь с результатом импорта (содержит созданный продукт)
         :raises IikoAPIError: если API вернул ошибку (result != SUCCESS или неожиданный формат ответа)
@@ -117,14 +117,14 @@ class NomenclatureEndpoints:
         """
         url = "/resto/api/v2/entities/products/save"
         headers = {"Content-Type": "application/json"}
-        
+
         # Выполнение POST-запроса к API для импорта элемента номенклатуры
         result: Response = self.client.post(
             endpoint=url,
             data=product.model_dump_json(exclude_none=True),
             headers=headers
         )
-        
+
         # Безопасный парсинг JSON ответа
         try:
             response_data = result.json()
@@ -133,17 +133,17 @@ class NomenclatureEndpoints:
             raise ValueError(
                 f"API вернул невалидный JSON. Ответ: {result.text[:200]}"
             ) from e
-        
+
         # Проверяем, что ответ - словарь (не список и не строка)
         if not isinstance(response_data, dict):
             raise IikoAPIError(
                 f"API вернул неожиданный формат ответа (ожидался dict, получен {type(response_data).__name__}): {response_data}"
             )
-        
+
         # API возвращает структуру с полями result, errors, response
         # response содержит созданный продукт
         result_status = response_data.get("result")
-        
+
         if result_status == "SUCCESS":
             response_result = response_data.get("response")
             if response_result is None:
@@ -156,7 +156,7 @@ class NomenclatureEndpoints:
             # Безопасная обработка errors - может быть не списком
             if not isinstance(errors, list):
                 errors = []
-            
+
             error_messages = [
                 f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}"
                 for err in errors
@@ -167,7 +167,7 @@ class NomenclatureEndpoints:
                 error_message += f". Ошибки: {', '.join(error_messages)}"
             else:
                 error_message += f". Статус: {result_status}"
-            
+
             raise IikoAPIError(error_message, errors=errors)
         else:
             # Неожиданный статус (не SUCCESS и не ERROR)

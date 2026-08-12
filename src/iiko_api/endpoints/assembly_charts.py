@@ -40,14 +40,14 @@ class AssemblyChartsEndpoints:
         """
         if not date_from:
             raise ValueError("date_from не может быть пустым")
-        
+
         # Валидация формата даты (только yyyy-MM-dd)
         date_pattern = r'^\d{4}-\d{2}-\d{2}$'
         if not re.match(date_pattern, date_from):
             raise ValueError(
                 f"date_from должен быть в формате 'yyyy-MM-dd', получено: '{date_from}'"
             )
-        
+
         if date_to and not re.match(date_pattern, date_to):
             raise ValueError(
                 f"date_to должен быть в формате 'yyyy-MM-dd', получено: '{date_to}'"
@@ -59,7 +59,7 @@ class AssemblyChartsEndpoints:
             "includePreparedCharts": include_prepared_charts,
             "includeDeletedProducts": include_deleted_products
         }
-        
+
         if date_to:
             params["dateTo"] = date_to
 
@@ -76,7 +76,7 @@ class AssemblyChartsEndpoints:
     def save_assembly_chart(self, assembly_chart: AssemblyChart) -> dict:
         """
         Сохранение технологической карты.
-        
+
         :param assembly_chart: Объект AssemblyChart с данными технологической карты
         :return: Словарь с полной технологической картой, созданной на сервере.
                  Возвращаемая техкарта содержит все поля из запроса плюс дополнительные поля от сервера:
@@ -89,14 +89,14 @@ class AssemblyChartsEndpoints:
         """
         url = "/resto/api/v2/assemblyCharts/save"
         headers = {"Content-Type": "application/json"}
-        
+
         # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
         result: Response = self.client.post(
             endpoint=url,
             data=assembly_chart.model_dump_json(exclude_none=True),
             headers=headers
         )
-        
+
         # Безопасный парсинг JSON ответа
         try:
             response_data = result.json()
@@ -104,17 +104,17 @@ class AssemblyChartsEndpoints:
             raise ValueError(
                 f"API вернул невалидный JSON. Ответ: {result.text[:200]}"
             ) from e
-        
+
         # Проверяем, что ответ - словарь (не список и не строка)
         if not isinstance(response_data, dict):
             raise IikoAPIError(
                 f"API вернул неожиданный формат ответа (ожидался dict, получен {type(response_data).__name__}): {response_data}"
             )
-        
+
         # API возвращает структуру с полями result, errors, response
         # response содержит полную созданную техкарту со всеми полями от сервера
         result_status = response_data.get("result")
-        
+
         if result_status == "SUCCESS":
             response_result = response_data.get("response")
             if response_result is None:
@@ -127,7 +127,7 @@ class AssemblyChartsEndpoints:
             # Безопасная обработка errors - может быть не списком
             if not isinstance(errors, list):
                 errors = []
-            
+
             error_messages = [
                 f"{err.get('code', 'UNKNOWN')}: {err.get('value', '')}"
                 for err in errors
@@ -138,7 +138,7 @@ class AssemblyChartsEndpoints:
                 error_message += f". Ошибки: {', '.join(error_messages)}"
             else:
                 error_message += f". Статус: {result_status}"
-            
+
             raise IikoAPIError(error_message, errors=errors)
         else:
             # Неожиданный статус (не SUCCESS и не ERROR)

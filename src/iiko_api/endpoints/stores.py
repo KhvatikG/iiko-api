@@ -42,19 +42,19 @@ class StoresEndpoints:
         try:
             corporate_items = dict_data.get("corporateItemDtoes", {})
             stores = corporate_items.get("corporateItemDto")
-            
+
             # Если stores - None или пустой словарь, возвращаем пустой список
             if stores is None:
                 return []
-            
+
             # Если stores - один элемент (не список), преобразуем в список
             if isinstance(stores, dict):
                 return [stores]
-            
+
             # Если stores - список, возвращаем как есть
             if isinstance(stores, list):
                 return stores
-            
+
             raise ValueError(f"Неожиданная структура данных: {type(stores)}")
         except (KeyError, AttributeError) as e:
             raise ValueError(
