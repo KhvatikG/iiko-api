@@ -1,6 +1,6 @@
 # iiko-api
 
-**Версия:** 1.1.0
+**Версия:** 1.1.1
 
 Библиотека для работы с API iiko.
 
@@ -127,7 +127,7 @@ with iiko_client.auth_context():
 **Примечание:** Методы в этом разделе требуют аутентификации. Используйте контекстный менеджер `auth_context()` или декоратор `with_authorization` для выполнения запросов, требующих авторизации.
 
 ### IikoApi.employees - Эндпоинты для работы с сотрудниками
-- `get_employees() -> list[dict]` - Возвращает всех сотрудников в виде списка словарей.
+- `get_employees(include_deleted: bool = False) -> list[dict]` - Возвращает сотрудников в виде списка словарей. При `include_deleted=True` RMS отдаёт и удалённых (`includeDeleted=true`); по умолчанию они скрыты.
 - `get_employee_by_id(employee_id: UUID) -> dict` - Возвращает сотрудника по id. Параметр `employee_id` может быть объектом `UUID` из модуля `uuid` или строкой, содержащей UUID.
 - `get_employees_by_department(department_code: str) -> list[dict]` - Возвращает сотрудников определенного отдела по его коду.
 - `get_attendances_for_department(department_code: str, date_from: datetime, date_to: datetime) -> list[dict]` - Возвращает список явок сотрудников для отдела за период.

@@ -1,6 +1,6 @@
 [project]
 name = "iiko-api"
-version = "1.1.0"
+version = "1.1.1"
 description = "Библиотека для работы с iiko api"
 readme = "README.md"
 license = "MIT"

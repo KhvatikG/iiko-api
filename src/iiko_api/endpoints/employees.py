@@ -16,15 +16,20 @@ class EmployeesEndpoints:
     def __init__(self, client: BaseClient):
         self.client = client
 
-    def get_employees(self) -> list[dict]:
+    def get_employees(self, include_deleted: bool = False) -> list[dict]:
         """
-        Получение списка всех сотрудников
+        Получение списка сотрудников.
 
+        По умолчанию RMS не отдаёт удалённых. При ``include_deleted=True``
+        в запрос добавляется ``includeDeleted=true``.
+
+        :param include_deleted: включать ли удалённых сотрудников (RMS ``includeDeleted``)
         :return: список словарей, где каждый словарь представляет сотрудника
         :raises ValueError: если XML не может быть распарсен или структура данных неожиданная
         """
         # Декоратор _handle_request_errors уже обработал ошибки (status >= 400)
-        xml_data = self.client.get('/resto/api/employees/')
+        params = {"includeDeleted": "true"} if include_deleted else None
+        xml_data = self.client.get("/resto/api/employees/", params=params)
 
         try:
             # Преобразование XML-данных в словарь
